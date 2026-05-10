@@ -4,12 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MADJI PRO</title>
-<meta name="theme-color" content="#38bdf8">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="MADJI PRO">
-<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -192,25 +186,14 @@ async function doLogin() {
   const errEl = document.getElementById('login-error')
   errEl.classList.add('hidden')
 
-  if (!username || !password) {
-    errEl.textContent = '⚠️ يرجى إدخال اسم المستخدم وكلمة المرور'
-    errEl.classList.remove('hidden')
-    return
-  }
-
   try {
     const { data, error } = await db.from('users')
-      .select('*')
-      .eq('username', username)
-      .eq('active', true)
+      .select('*').eq('username', username).eq('active', true).single()
 
-    if (error) throw new Error('خطأ في الاتصال: ' + error.message)
-    if (!data || data.length === 0) throw new Error('اسم المستخدم غير موجود')
-    
-    const user = data[0]
-    if (user.password_hash !== password) throw new Error('كلمة المرور غير صحيحة')
+    if (error || !data) throw new Error('المستخدم غير موجود')
+    if (data.password_hash !== password) throw new Error('كلمة المرور غير صحيحة')
 
-    currentUser = user
+    currentUser = data
     document.getElementById('login-screen').classList.add('hidden')
     document.getElementById('app-screen').classList.remove('hidden')
     initApp()
@@ -231,11 +214,11 @@ function doLogout() {
 //  APP INIT
 // ═══════════════════════════════════════
 const ROLE_TABS = {
-  superadmin:   [{k:'dashboard',l:'📊 لوحة التحكم'},{k:'users',l:'👥 المستخدمون'},{k:'products',l:'📦 المنتجات'},{k:'stock',l:'🏭 المخزن'},{k:'orders',l:'🛒 الطلبات'},{k:'costs',l:'💰 التكاليف'}],
-  orders_admin: [{k:'new_orders',l:'📥 جديدة'},{k:'ready_orders',l:'📦 جاهزة'},{k:'transit_orders',l:'🚚 في الطريق'}],
+  superadmin:   [{k:'dashboard',l:'📊 لوحة التحكم'},{k:'users',l:'👥 المستخدمون'},{k:'products',l:'📦 المنتجات'},{k:'orders',l:'🛒 الطلبات'},{k:'costs',l:'💰 التكاليف'}],
+  orders_admin: [{k:'new_orders',l:'📥 طلبات جديدة'},{k:'ready_orders',l:'📦 جاهزة للشحن'},{k:'transit_orders',l:'🚚 في الطريق'}],
   stock_admin:  [{k:'stock',l:'🏭 المخزن'}],
-  driver:       [{k:'my_orders',l:'🚚 طلباتي'},{k:'done_orders',l:'✅ المُسلَّمة'},{k:'driver_stats',l:'📊 إحصائياتي'}],
-  customer:     [{k:'shop',l:'🛒 اطلب الآن'},{k:'profile',l:'🏪 محلي'},{k:'my_history',l:'📋 طلباتي'},{k:'points',l:'⭐ نقاطي'}],
+  driver:       [{k:'my_orders',l:'🚚 طلباتي'},{k:'done_orders',l:'✅ المُسلَّمة'}],
+  customer:     [{k:'shop',l:'🛒 الطلب'},{k:'my_history',l:'📋 طلباتي'},{k:'points',l:'⭐ نقاطي'}],
 }
 
 async function initApp() {
@@ -247,7 +230,6 @@ async function initApp() {
   nav.innerHTML = tabs.map(t => `<button class="navtab" onclick="switchTab('${t.k}')">${t.l}</button>`).join('')
 
   await loadData()
-  loadShopProfile()
   switchTab(tabs[0]?.k || '')
 }
 
@@ -297,10 +279,8 @@ function renderPage() {
     transit_orders: ()=>renderOrdersAdmin('in_transit'),
     stock: renderStock,
     my_orders: ()=>renderDriverOrders(false),
-    my_orders: ()=>renderDriverOrders(false),
     done_orders: ()=>renderDriverOrders(true),
-    driver_stats: renderDriverStats,
-    shop: renderShop, my_history: renderMyHistory, points: renderPoints, profile: renderProfile,
+    shop: renderShop, my_history: renderMyHistory, points: renderPoints,
   }
   const fn = renders[activeTab]
   el.innerHTML = fn ? fn() : '<div class="spinner">الصفحة غير موجودة</div>'
@@ -345,8 +325,7 @@ function printBDC(o) {
   <hr>
   <div style="font-size:18px;font-weight:900;margin-bottom:14px">📋 بون دي كوماند — ${o.id}</div>
   <div class="meta">
-    <div class="mb"><div class="ml">الزبون</div><strong>${o.customerName}</strong><div style="color:#666;margin-top:3px">📞 ${o.phone}</div>
-      <a href="tel:${o.phone}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 12px;color:#22c55e;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px">📲 اتصال بالزبون</div></div>
+    <div class="mb"><div class="ml">الزبون</div><strong>${o.customerName}</strong><div style="color:#666;margin-top:3px">📞 ${o.phone}</div></div>
     <div class="mb"><div class="ml">العنوان</div>${o.address}</div>
   </div>
   <table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr></thead><tbody>${rows}</tbody></table>
@@ -555,7 +534,6 @@ function renderOrdersAdmin(status) {
         ${badge(STATUS[status]?.l||status,STATUS[status]?.c||'#888')}
       </div>
       <div style="font-size:12px;color:rgba(232,238,255,0.5);margin-bottom:6px">📞 ${o.phone}</div>
-      <a href="tel:${o.phone}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 12px;color:#22c55e;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px">📲 اتصال بالزبون</div>
       <div style="font-size:12px;color:rgba(232,238,255,0.5);margin-bottom:10px">📍 ${o.address}</div>
       ${o.note?`<div style="font-size:12px;color:var(--warn);background:rgba(245,158,11,0.08);border-radius:8px;padding:6px 10px;margin-bottom:10px">💬 ${o.note}</div>`:''}
       <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">${items}</div>
@@ -574,55 +552,32 @@ function renderOrdersAdmin(status) {
 //  STOCK
 // ═══════════════════════════════════════
 function renderStock() {
-  const total = allProducts.reduce((s,p)=>s+p.stock,0)
-  const low   = allProducts.filter(p=>p.stock<p.min_stock)
-  const exp   = allProducts.filter(p=>daysUntil(p.expiry_date)<=0)
-
-  const cards = allProducts.map(p=>{
+  const rows = allProducts.map(p=>{
     const pct = Math.min(100,(p.stock/(p.min_stock*5))*100)
     const fc  = p.stock<p.min_stock?'#f43f5e':p.stock<p.min_stock*2?'#f59e0b':'#22c55e'
     const days = daysUntil(p.expiry_date)
     const ec  = days<=0?'#f43f5e':days<=60?'#f59e0b':'#22c55e'
-    const status = p.stock<p.min_stock?'منخفض ⚠️':p.stock<p.min_stock*2?'متوسط':'جيد ✅'
-    return `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;border-right:3px solid ${fc}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:28px">${p.emoji}</span>
-          <div>
-            <div style="font-size:15px;font-weight:800">${p.name}</div>
-            <div style="font-size:11px;color:rgba(232,238,255,0.45)">${p.volume} — ${p.category}</div>
-          </div>
-        </div>
-        <div style="text-align:left">
-          <div style="font-size:26px;font-weight:900;color:${fc}">${p.stock}</div>
-          <div style="font-size:10px;color:rgba(232,238,255,0.45)">من أصل ${p.min_stock*5}</div>
-        </div>
-      </div>
-      <div class="progress-wrap" style="margin-bottom:10px">
-        <div class="progress-fill" style="width:${pct}%;background:${fc}"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
-        <div style="display:flex;gap:12px">
-          <span style="color:rgba(232,238,255,0.45)">الحد الأدنى: <strong style="color:#e8eeff">${p.min_stock}</strong></span>
-          <span style="color:${ec}">صلاحية: ${days<=0?'منتهية ⛔':days+'ي'}</span>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="setStock('${p.id}','${p.name}',${p.stock})">✏️ تعديل</button>
-          <button class="btn btn-ghost btn-sm" style="color:var(--success);border-color:rgba(34,197,94,0.3)" onclick="addStock('${p.id}','${p.name}')">+ إضافة</button>
-        </div>
-      </div>
-    </div>`}).join('')
+    return `<tr>
+      <td>${p.emoji} ${p.name} <span style="font-size:11px;color:rgba(232,238,255,0.4)">${p.volume}</span></td>
+      <td style="font-weight:900;color:${fc};font-size:16px">${p.stock}</td>
+      <td style="color:rgba(232,238,255,0.5)">${p.min_stock}</td>
+      <td style="font-size:11px;color:${ec}">${p.expiry_date}${days<=0?' ⛔':days<=60?` ⚠️${days}ي`:''}</td>
+      <td><div class="progress-wrap" style="width:80px"><div class="progress-fill" style="width:${pct}%;background:${fc}"></div></div></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="addStock('${p.id}','${p.name}')">+ كمية</button></td>
+    </tr>`}).join('')
 
   return `
     <div class="page-title">🏭 إدارة المخزن</div>
     <div class="kpi-grid">
-      ${kpi(total.toLocaleString(),'إجمالي المخزون','#38bdf8')}
-      ${kpi(low.length,'مخزون منخفض','#f59e0b')}
-      ${kpi(exp.length,'منتهية الصلاحية','#f43f5e')}
+      ${kpi(allProducts.reduce((s,p)=>s+p.stock,0).toLocaleString(),'إجمالي المخزون','#38bdf8')}
+      ${kpi(allProducts.filter(p=>p.stock<p.min_stock).length,'مخزون منخفض','#f59e0b')}
+      ${kpi(allProducts.filter(p=>daysUntil(p.expiry_date)<=0).length,'منتهية الصلاحية','#f43f5e')}
       ${kpi(allProducts.length,'أنواع المنتجات','#818cf8')}
     </div>
-    ${cards}`
+    <div class="table-card">
+      <table><thead><tr><th>المنتج</th><th>الكمية</th><th>الحد الأدنى</th><th>الصلاحية</th><th>المستوى</th><th>إجراء</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+    </div>`
 }
 
 // ═══════════════════════════════════════
@@ -638,7 +593,6 @@ function renderDriverOrders(done) {
         ${badge(STATUS[o.status]?.l||o.status,STATUS[o.status]?.c||'#888')}
       </div>
       <div style="font-size:13px;color:rgba(232,238,255,0.5);margin-bottom:4px">📞 ${o.phone}</div>
-      <a href="tel:${o.phone}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 12px;color:#22c55e;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px">📲 اتصال بالزبون</div>
       <div style="font-size:13px;color:rgba(232,238,255,0.5);margin-bottom:10px">📍 ${o.address}</div>
       ${o.note?`<div style="font-size:12px;color:var(--warn);background:rgba(245,158,11,0.08);border-radius:8px;padding:6px 10px;margin-bottom:10px">💬 ${o.note}</div>`:''}
       <div style="margin-bottom:12px">${o.items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${i.emoji} ${i.name} ×${i.qty}</span><span style="color:var(--accent);font-weight:700">${i.price*i.qty} دج</span></div>`).join('')}</div>
@@ -655,69 +609,48 @@ function renderDriverOrders(done) {
 // ═══════════════════════════════════════
 //  CUSTOMER SHOP
 // ═══════════════════════════════════════
-// ═══ الولايات والبلديات ═══
-const WILAYAS = {'01-أدرار':['أدرار','رقان','تيميمون','برات','أولف','بودة','زاوية كنتة','تسابيت','أقبلي','فنوغيل'],'02-الشلف':['الشلف','تنس','بنايرية','الكريمية','بريرة','بوزغاية','حرشون','الهرانفة','وادي فضة'],'03-الأغواط':['الأغواط','آفلو','حاسي الرمل','قصر الهيران','سيدي مخلوف','بريدة','تاجموت','عين ماضي'],'04-أم البواقي':['أم البواقي','عين البيضاء','عين فكرون','العامري','مسكيانة','عين مليلة','سوق نعمان'],'05-باتنة':['باتنة','عين توتة','مروانة','أريس','تكوت','بريكة','قصبة','نقاوس','فسديس'],'06-بجاية':['بجاية','أقبو','خراطة','سيدي عيش','أميزور','فنايا إيلماتن','الكروب','سوق الإثنين'],'07-بسكرة':['بسكرة','طولقة','سيدي عقبة','أورلال','أوماش','القنطرة','زريبة الوادي','شتمة'],'08-بشار':['بشار','عين الصفراء','أبادلة','بني ونيف','تبلبالة','كرزاز','القنادسة'],'09-البليدة':['البليدة','بوفاريك','الأربعاء','بني تامو','أولاد يعيش','موزاية','شريعة'],'10-البويرة':['البويرة','سور الغزلان','أقبيل','لخضارية','الحجرة','عين بسام','برج أوخريص'],'11-تمنراست':['تمنراست','إن قزام','إن صالح','إن گار','إدلس'],'12-تبسة':['تبسة','الشريعة','بئر العاتر','عين زروق','الونزة','مرسط','النقرين','فركان'],'13-تلمسان':['تلمسان','مغنية','الغزوات','رمشي','صبرة','سبدو','بني سنوس','العريشة'],'14-تيارت':['تيارت','فرندة','مشرع الصفا','رحوية','الأغلال','قصر الشلالة','دحموني'],'15-تيزي وزو':['تيزي وزو','ذراع الميزان','عزازقة','بني دوالة','أيت محمود','بوجيلوف','واضية','مكيرة'],'16-الجزائر':['الجزائر الوسطى','باب الوادي','باب الزوار','بن عكنون','الحراش','برج البحري','الرويبة','الدار البيضاء','بئر مراد رايس','بئر خادم','حسين داي','القبة','المحمدية','الشراقة','درارية'],'17-الجلفة':['الجلفة','مسعد','عين وسارة','بيرين','سيدي لعجال','حاسي بحبح','تعظيمت','دار الشيوخ'],'18-جيجل':['جيجل','الميلية','الطاهير','العوانة','شقفة','زيامة منصورية','غبالة'],'19-سطيف':['سطيف','العلمة','برج بوعريريج','عين أزال','بئر العرش','قجال','عين ولمان','مزلوق'],'20-سعيدة':['سعيدة','عين الحجر','يوب','سيدي بوبكر','تيرار','أولاد إبراهيم'],'21-سكيكدة':['سكيكدة','عزابة','القل','الحروش','فلفلة','زيغود يوسف'],'22-سيدي بلعباس':['سيدي بلعباس','تلاغ','مرحوم','سيدي إبراهيم','عين تيندامين','أولاد خالد'],'23-عنابة':['عنابة','البرجة','سيدي عمار','حجار','الشريعة'],'24-قالمة':['قالمة','القل','عين مخلوف','بوشقوف','الرقاية','بوحمدان'],'25-قسنطينة':['قسنطينة','الخروب','عين عبيد','حامة بوزيان','ديدوش مراد'],'26-المدية':['المدية','بوعيش','قصر البخاري','العزيزية','شلالة العذاورة','بني سليمان'],'27-مستغانم':['مستغانم','عين تادلس','المشرية','فروحة','سيدي عيسى','خضرة'],'28-مسيلة':['مسيلة','بوسعادة','سيدي عيسى','عين الخضراء','برهوم','سلوم'],'29-معسكر':['معسكر','غريس','تيغنيف','المحمدية','سيق','بوهني'],'30-ورقلة':['ورقلة','النقوسة','تقرت','حاسي مسعود','سيدي قلعون','المقارين'],'31-وهران':['وهران','عين الترك','مرسى الكبير','الأندلس','بطيوة','بئر الجير','سيدي الشحمي','القطنة'],'32-البيض':['البيض','بوقطب','الأبيض سيدي الشيخ','الشقيق','المحبس','بريزينة'],'33-إليزي':['إليزي','دبداب','برج عمر إدريس','إن أمناس'],'34-برج بوعريريج':['برج بوعريريج','رأس الوادي','العش','الأنصر','تقلعت','منصورة'],'35-بومرداس':['بومرداس','بودواو','دلس','ثنية الحد','إسطبول','خميس الخشنة','الناصرية'],'36-الطارف':['الطارف','القل','ابن زياد','الذرعان','عصفور','زريزر'],'37-تيندوف':['تيندوف','أم العسل'],'38-تيسمسيلت':['تيسمسيلت','خميستي','العيون','الأرباء','برج بونعامة'],'39-الوادي':['الوادي','الرقيبة','جامعة','حاسي خليفة','الدبيلة','كوينين'],'40-خنشلة':['خنشلة','بغاي','شلية','أنسيغة','بابار'],'41-سوق أهراس':['سوق أهراس','صدوق','مداوروش','سخنة','مشروحة'],'42-تيبازة':['تيبازة','الشرفة','بواقي','أحمر العين','خميستي','سيدي عمر'],'43-ميلة':['ميلة','فرجيوة','شلغوم العيد','أحمد راشدي','الطاية','وادي عتيبة'],'44-عين الدفلى':['عين الدفلى','الخميس','العطاف','عين الصلاح','مصدق','حمام ريغة'],'45-النعامة':['النعامة','مشرية','عسلة','صفيصيفة','تيوت'],'46-عين تموشنت':['عين تموشنت','بني صاف','سيدي بن عدة','أولاد كيحل'],'47-غرداية':['غرداية','بريان','متليلي الشعانبة','القرارة','بنورة','زلفانة'],'48-غليزان':['غليزان','رليزان','الجمعة','أولاد يعيش','سيدي خطاب','عمي موسى']}
-
 let shopCat = 'الكل'
-let orderLocation = {lat:null, lng:null, wilaya:'', commune:'', address:''}
-
 function renderShop() {
-  const hour = new Date().getHours()
-  const greeting = hour<12?'صباح الخير ☀️':hour<18?'مساء الخير 🌤️':'مساء النور 🌙'
   const cats = ['الكل','غازية','غير غازية','ماء']
   const filtered = shopCat==='الكل'?allProducts:allProducts.filter(p=>p.category===shopCat)
   const cartItems = Object.entries(cart).map(([id,qty])=>({...allProducts.find(p=>p.id===id),qty}))
-  const subtotal = cartItems.reduce((s,i)=>s+(i.sell_price||0)*i.qty,0)
+  const subtotal  = cartItems.reduce((s,i)=>s+(i.sell_price||0)*i.qty,0)
   const cartCount = Object.values(cart).reduce((a,b)=>a+b,0)
-  const hasLoc = orderLocation.lat && orderLocation.lng
-
-  const wilayaOptions = Object.keys(WILAYAS).map(w=>`<option value="${w}" ${orderLocation.wilaya===w?'selected':''}>${w}</option>`).join('')
-  const communes = orderLocation.wilaya ? (WILAYAS[orderLocation.wilaya]||[]) : []
-  const communeOptions = communes.map(c=>`<option value="${c}" ${orderLocation.commune===c?'selected':''}>${c}</option>`).join('')
 
   const catBtns = cats.map(c=>`<button class="cat-btn ${shopCat===c?'active':''}" onclick="setShopCat('${c}')">${c}</button>`).join('')
-  const prods = filtered.map(p=>{
-    const qty=cart[p.id]||0
-    const qtyCtrl=qty===0?`<button class="add-btn" onclick="addCart('${p.id}')">+</button>`:`<div class="qty-row"><button class="qty-btn" onclick="removeCart('${p.id}')">−</button><span style="font-size:14px;font-weight:800;min-width:16px;text-align:center">${qty}</span><button class="qty-btn" onclick="addCart('${p.id}')">+</button></div>`
-    return `<div class="prod-card"><div class="prod-top"><div style="font-size:36px">${p.emoji}</div><div style="font-size:14px;font-weight:800;margin-top:4px">${p.name}</div><div style="font-size:11px;color:rgba(232,238,255,0.45)">${p.volume}</div></div><div class="prod-bot"><span style="font-size:16px;font-weight:900;color:var(--accent)">${p.sell_price} <small style="font-size:10px;font-weight:500">دج</small></span>${qtyCtrl}</div></div>`
-  }).join('')
+  const prods   = filtered.map(p=>{
+    const qty = cart[p.id]||0
+    const qtyCtrl = qty===0
+      ? `<button class="add-btn" onclick="addCart('${p.id}')">+</button>`
+      : `<div class="qty-row"><button class="qty-btn" onclick="removeCart('${p.id}')">−</button><span style="font-size:14px;font-weight:800;min-width:16px;text-align:center">${qty}</span><button class="qty-btn" onclick="addCart('${p.id}')">+</button></div>`
+    return `<div class="prod-card">
+      <div class="prod-top"><div style="font-size:36px">${p.emoji}</div><div style="font-size:14px;font-weight:800;margin-top:4px">${p.name}</div><div style="font-size:11px;color:rgba(232,238,255,0.45)">${p.volume}</div></div>
+      <div class="prod-bot"><span style="font-size:16px;font-weight:900;color:var(--accent)">${p.sell_price} <small style="font-size:10px;font-weight:500">دج</small></span>${qtyCtrl}</div>
+    </div>`}).join('')
 
-  const locSection = `<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px">
-    <div style="font-size:14px;font-weight:800;margin-bottom:12px">📍 موقع التوصيل</div>
-    <div style="background:${hasLoc?'rgba(34,197,94,0.08)':'rgba(56,189,248,0.06)'};border:1px solid ${hasLoc?'rgba(34,197,94,0.3)':'rgba(56,189,248,0.2)'};border-radius:12px;padding:14px;margin-bottom:12px">
-      ${hasLoc?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:22px">✅</span><div><div style="font-size:13px;font-weight:800;color:var(--success)">تم تحديد موقعك بدقة!</div><div style="font-size:11px;color:rgba(232,238,255,0.5)">${orderLocation.lat.toFixed(5)}°N، ${orderLocation.lng.toFixed(5)}°E</div></div></div><a href="https://maps.google.com/?q=${orderLocation.lat},${orderLocation.lng}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;display:block;margin-bottom:8px">🗺️ عرض على Google Maps</a>`:'<div style="font-size:13px;color:rgba(232,238,255,0.6);margin-bottom:10px">📡 اضغط لتحديد موقعك — يساعد السائق للوصول بدقة</div>'}
-      <button onclick="getOrderGPS()" style="width:100%;padding:11px;border-radius:10px;background:${hasLoc?'rgba(255,255,255,0.06)':'linear-gradient(90deg,var(--accent),var(--accent2))'};border:${hasLoc?'1px solid var(--border)':'none'};color:${hasLoc?'#e8eeff':'#070d1a'};font-size:14px;font-weight:800;cursor:pointer;font-family:'Cairo',sans-serif">
-        ${hasLoc?'🔄 تحديث الموقع':'📍 تحديد موقعي الآن بـ GPS'}
-      </button>
-      <div id="gps-order-status" style="font-size:12px;color:rgba(232,238,255,0.5);text-align:center;margin-top:6px;min-height:16px"></div>
-    </div>
-    <div class="field-label">🏙️ الولاية</div>
-    <select class="sel" id="order-wilaya" onchange="onWilayaChange(this.value)"><option value="">اختر الولاية</option>${wilayaOptions}</select>
-    ${orderLocation.wilaya?`<div class="field-label">🏘️ البلدية / الدائرة</div><select class="sel" id="order-commune" onchange="orderLocation.commune=this.value"><option value="">اختر البلدية</option>${communeOptions}</select>`:''}
-    <div class="field-label">🏠 العنوان التفصيلي</div>
-    <input class="inp" id="order-address" value="${orderLocation.address}" placeholder="الحي، الشارع، رقم المحل أو المنزل">
-  </div>`
-
-  const cartSection = cartCount>0?`
-    <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:16px;padding:16px;margin-bottom:14px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px">🛒 ملخص الطلب</div>
-      ${cartItems.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${i.emoji} ${i.name} ×${i.qty}</span><span style="font-weight:700">${(i.sell_price||0)*i.qty} دج</span></div>`).join('')}
-      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;color:rgba(232,238,255,0.5)"><span>🚚 رسوم التوصيل</span><span>50 دج</span></div>
+  const cartSection = cartCount>0 ? `
+    <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:16px;padding:16px;margin-top:16px">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 ملخص الطلب</div>
+      ${cartItems.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${i.emoji} ${i.name} ×${i.qty}</span><span style="font-weight:700">${(i.sell_price||0)*i.qty} دج</span></div>`).join('')}
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;color:rgba(232,238,255,0.5)"><span>رسوم التوصيل</span><span>50 دج</span></div>
       <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:900;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)"><span>الإجمالي</span><span style="color:var(--accent)">${subtotal+50} دج</span></div>
     </div>
-    <div style="margin-bottom:14px">
+    <div style="margin-top:12px">
       <div class="field-label">📞 رقم الهاتف</div>
-      <input class="inp" id="order-phone" value="${currentUser.phone||''}" placeholder="0555 123 456">
-      <div class="field-label">💬 ملاحظة للسائق</div>
-      <input class="inp" id="order-note" placeholder="مثال: المحل في الطابق الأرضي">
-    </div>
-    <button class="btn-primary" onclick="placeOrder()" style="width:100%;padding:15px;font-size:16px;border-radius:14px">✅ تأكيد الطلب — ${subtotal+50} دج</button>`:''
+      <input class="inp" id="order-phone" value="${currentUser.phone||''}" placeholder="0555123456">
+      <div class="field-label">📍 العنوان التفصيلي</div>
+      <input class="inp" id="order-address" placeholder="الحي، الشارع، رقم المبنى">
+      <div class="field-label">💬 ملاحظة (اختياري)</div>
+      <input class="inp" id="order-note" placeholder="ملاحظة للسائق...">
+      <button class="btn-primary" onclick="placeOrder()">✅ تأكيد الطلب — ${subtotal+50} دج</button>
+    </div>` : ''
 
-  return `<div style="font-size:15px;font-weight:700;color:rgba(232,238,255,0.6);margin-bottom:14px">${greeting}، ${currentUser.name.split(' ')[0]} 👋</div>${locSection}<div class="cat-row">${catBtns}</div><div class="prod-grid">${prods}</div>${cartSection}`
+  return `
+    <div class="cat-row">${catBtns}</div>
+    <div class="prod-grid">${prods}</div>
+    ${cartSection}`
 }
 
-function onWilayaChange(val){orderLocation.wilaya=val;orderLocation.commune='';renderPage();setTimeout(()=>{const s=document.getElementById('order-wilaya');if(s)s.value=val},50)}
-function getOrderGPS(){const s=document.getElementById('gps-order-status');if(s){s.textContent='⏳ جاري تحديد موقعك...';s.style.color='var(--accent)'}if(!navigator.geolocation){if(s){s.textContent='⚠️ المتصفح لا يدعم GPS';s.style.color='var(--danger)'}return}navigator.geolocation.getCurrentPosition(pos=>{orderLocation.lat=pos.coords.latitude;orderLocation.lng=pos.coords.longitude;renderPage()},err=>{const m={1:'⚠️ يرجى السماح بالوصول للموقع من إعدادات المتصفح',2:'⚠️ تأكد من تفعيل GPS',3:'⚠️ انتهت المهلة، حاول مجدداً'};const s=document.getElementById('gps-order-status');if(s){s.textContent=m[err.code]||'⚠️ خطأ في GPS';s.style.color='var(--danger)'}},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
 function setShopCat(c) { shopCat=c; renderPage() }
 function addCart(id)    { cart[id]=(cart[id]||0)+1; renderPage() }
 function removeCart(id) { if(cart[id]>1)cart[id]--;else delete cart[id]; renderPage() }
@@ -762,33 +695,6 @@ function renderPoints() {
       💧 200 نقطة = منتج مجاني
     </div>`
 }
-
-// ═══════════════════════════════════════
-//  PROFILE — ملف المحل
-// ═══════════════════════════════════════
-let shopProfile = {shopName:"",commercialReg:"",taxNumber:"",activityType:"",startDate:"",wilaya:"",address:"",lat:null,lng:null,photoUrl:null,phone2:""}
-
-function renderProfile() {
-  const p = shopProfile
-  const hasLocation = p.lat && p.lng
-  const wilayas = ["الجزائر","وهران","قسنطينة","عنابة","بجاية","سطيف","تلمسان","باتنة","بسكرة","ورقلة","غرداية","تيزي وزو","المدية","البليدة","بومرداس","تيبازة","جيجل","سكيكدة","سوق أهراس","خنشلة","أم البواقي","قالمة","الطارف","تبسة","مسيلة","برج بوعريريج","بويرة","الأغواط","الجلفة","النعامة","البيض","تيسمسيلت","سيدي بلعباس","معسكر","مستغانم","تيارت","الشلف","عين الدفلى","عين تموشنت","غليزان","أدرار","تمنراست","إليزي","تندوف","بشار"]
-  return `<div class="page-title">🏪 ملف المحل</div>
-<div style="text-align:center;margin-bottom:20px"><div id="shop-photo-preview" style="width:120px;height:120px;border-radius:20px;background:rgba(255,255,255,0.06);border:2px dashed rgba(56,189,248,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 12px;overflow:hidden;cursor:pointer" onclick="document.getElementById('shop-photo-input').click()">${p.photoUrl?`<img src="${p.photoUrl}" style="width:100%;height:100%;object-fit:cover">`:"<div style='font-size:36px'>🏪</div><div style='font-size:11px;color:rgba(232,238,255,0.4);margin-top:4px'>اضغط لإضافة صورة</div>"}</div><input type="file" id="shop-photo-input" accept="image/*" style="display:none" onchange="handleShopPhoto(this)"><button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="document.getElementById('shop-photo-input').click()">📷 ${p.photoUrl?"تغيير الصورة":"إضافة صورة المحل"}</button></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--accent)">📋 المعلومات الأساسية</div><div class="field-label">🏪 اسم المحل</div><input class="inp" id="p-shopName" value="${p.shopName}" placeholder="محل الوفاء للمشروبات"><div class="field-label">🗂️ نوع النشاط</div><select class="sel" id="p-activityType"><option value="">اختر نوع النشاط</option>${["تجزئة","جملة","مطعم","فندق","سوبرماركت","أخرى"].map(t=>`<option value="${t}" ${p.activityType===t?"selected":""}>${t}</option>`).join("")}</select><div class="field-label">📅 تاريخ بداية النشاط</div><input class="inp" id="p-startDate" type="date" value="${p.startDate}"></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--accent2)">📜 المعلومات القانونية</div><div class="field-label">🔢 رقم السجل التجاري</div><input class="inp" id="p-commercialReg" value="${p.commercialReg}" placeholder="16/00-1234567"><div class="field-label">🧾 الرقم الضريبي NIF</div><input class="inp" id="p-taxNumber" value="${p.taxNumber}" placeholder="000016001234567"></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--success)">📍 الموقع الجغرافي</div><div class="field-label">🏙️ الولاية</div><select class="sel" id="p-wilaya"><option value="">اختر الولاية</option>${wilayas.map(w=>`<option value="${w}" ${p.wilaya===w?"selected":""}>${w}</option>`).join("")}</select><div class="field-label">🏠 العنوان التفصيلي</div><input class="inp" id="p-address" value="${p.address}" placeholder="الحي، الشارع، رقم المحل"><div style="background:${hasLocation?"rgba(34,197,94,0.08)":"rgba(56,189,248,0.06)"};border:1px solid ${hasLocation?"rgba(34,197,94,0.25)":"rgba(56,189,248,0.2)"};border-radius:12px;padding:14px;margin-bottom:10px">${hasLocation?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:20px">✅</span><div><div style="font-size:13px;font-weight:700;color:var(--success)">تم تحديد الموقع</div><div style="font-size:11px;color:rgba(232,238,255,0.5)">${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</div></div></div><a href="https://maps.google.com/?q=${p.lat},${p.lng}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">🗺️ عرض على Google Maps</a>`:"<div style="font-size:13px;color:rgba(232,238,255,0.6);margin-bottom:10px">📡 يسمح بتوصيل أسرع ودقيق لمحلك</div>"}<button class="btn ${hasLocation?"btn-ghost":"btn-primary"}" style="width:100%;padding:12px;font-size:14px;margin-top:8px" onclick="getGPSLocation()">📍 ${hasLocation?"🔄 تحديث الموقع":"تحديد موقعي الآن بـ GPS"}</button></div><div id="gps-status" style="font-size:12px;color:rgba(232,238,255,0.5);text-align:center;min-height:18px"></div></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:20px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--warn)">📞 معلومات التواصل</div><div class="field-label">📱 رقم الهاتف الرئيسي</div><input class="inp" id="p-phone" value="${currentUser.phone||""}" placeholder="0555 123 456"><div class="field-label">📱 رقم هاتف بديل</div><input class="inp" id="p-phone2" value="${p.phone2||""}" placeholder="0661 234 567"></div>
-<button class="btn-primary" style="width:100%;padding:15px;font-size:16px;border-radius:14px" onclick="saveProfile()">💾 حفظ ملف المحل</button><div id="profile-msg" style="text-align:center;margin-top:12px;font-size:13px;min-height:20px"></div>`
-}
-
-function handleShopPhoto(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{shopProfile.photoUrl=e.target.result;renderPage()};reader.readAsDataURL(file)}
-
-function getGPSLocation(){const s=document.getElementById("gps-status");if(s){s.textContent="⏳ جاري تحديد موقعك...";s.style.color="var(--accent)"}if(!navigator.geolocation){if(s){s.textContent="⚠️ المتصفح لا يدعم GPS";s.style.color="var(--danger)"}return}navigator.geolocation.getCurrentPosition(pos=>{shopProfile.lat=pos.coords.latitude;shopProfile.lng=pos.coords.longitude;renderPage()},err=>{const m={1:"⚠️ يرجى السماح بالوصول للموقع",2:"⚠️ تعذر تحديد الموقع",3:"⚠️ انتهت مهلة التحديد"};const s=document.getElementById("gps-status");if(s){s.textContent=m[err.code]||"⚠️ خطأ";s.style.color="var(--danger)"}},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
-
-async function saveProfile(){const m=document.getElementById("profile-msg");shopProfile.shopName=document.getElementById("p-shopName")?.value||"";shopProfile.activityType=document.getElementById("p-activityType")?.value||"";shopProfile.startDate=document.getElementById("p-startDate")?.value||"";shopProfile.commercialReg=document.getElementById("p-commercialReg")?.value||"";shopProfile.taxNumber=document.getElementById("p-taxNumber")?.value||"";shopProfile.wilaya=document.getElementById("p-wilaya")?.value||"";shopProfile.address=document.getElementById("p-address")?.value||"";shopProfile.phone2=document.getElementById("p-phone2")?.value||"";const phone=document.getElementById("p-phone")?.value||"";await db.from("users").update({phone,city:shopProfile.wilaya}).eq("id",currentUser.id);localStorage.setItem("shopProfile_"+currentUser.id,JSON.stringify(shopProfile));if(m){m.style.color="var(--success)";m.textContent="✅ تم حفظ ملف المحل بنجاح!";setTimeout(()=>{if(m)m.textContent=""},3000)}}
-
-function loadShopProfile(){const s=localStorage.getItem("shopProfile_"+(currentUser?.id));if(s){try{shopProfile={...shopProfile,...JSON.parse(s)}}catch(e){}}}
-
 
 // ═══════════════════════════════════════
 //  MODAL
@@ -925,33 +831,18 @@ async function deleteProduct(id) {
 function addStock(id,name) {
   openModal(`📦 إضافة كمية — ${name}`,`
     <div class="field-label">الكمية المضافة</div>
-    <input class="inp" id="f-qty" type="number" placeholder="100" min="1">
+    <input class="inp" id="f-qty" type="number" placeholder="100">
     <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveStock('${id}','add')">✅ تأكيد الإضافة</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveStock('${id}')">✅ تأكيد</button>
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
     </div>`)
 }
 
-function setStock(id,name,current) {
-  openModal(`✏️ تعديل كمية — ${name}`,`
-    <div style="text-align:center;margin-bottom:14px">
-      <div style="font-size:13px;color:rgba(232,238,255,0.5)">الكمية الحالية</div>
-      <div style="font-size:36px;font-weight:900;color:var(--accent)">${current}</div>
-    </div>
-    <div class="field-label">الكمية الجديدة</div>
-    <input class="inp" id="f-qty" type="number" value="${current}" min="0">
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveStock('${id}','set')">💾 حفظ الكمية</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
-    </div>`)
-}
-
-async function saveStock(id, mode) {
+async function saveStock(id) {
   const qty=+document.getElementById('f-qty').value
-  if(qty<0){alert('أدخل كمية صحيحة');return}
+  if(!qty||qty<=0){alert('أدخل كمية صحيحة');return}
   const p=allProducts.find(x=>x.id===id)
-  const newStock = mode==='add' ? p.stock+qty : qty
-  await db.from('products').update({stock:newStock}).eq('id',id)
+  await db.from('products').update({stock:p.stock+qty}).eq('id',id)
   closeModal(); await loadData(); renderPage()
 }
 
@@ -1023,34 +914,16 @@ async function deliverOrder(id) {
 
 async function placeOrder() {
   const phone=document.getElementById('order-phone')?.value
-  const addrInput=document.getElementById('order-address')?.value
+  const address=document.getElementById('order-address')?.value
   const note=document.getElementById('order-note')?.value||''
-
-  // بناء العنوان الكامل
-  orderLocation.address = addrInput||''
-  const commune = document.getElementById('order-commune')?.value||orderLocation.commune||''
-  const wilaya = orderLocation.wilaya||''
-  const fullAddress = [addrInput, commune, wilaya].filter(Boolean).join(' — ')
-  const city = wilaya || currentUser.city || ''
-
-  if(!phone){alert('يرجى إدخال رقم الهاتف');return}
-  if(!wilaya){alert('يرجى اختيار الولاية');return}
-  if(!addrInput){alert('يرجى إدخال العنوان التفصيلي');return}
+  if(!phone||!address){alert('يرجى إدخال الهاتف والعنوان');return}
 
   const cartItems=Object.entries(cart).map(([id,qty])=>({...allProducts.find(p=>p.id===id),qty}))
   const subtotal=cartItems.reduce((s,i)=>s+(i.sell_price||0)*i.qty,0)
   const total=subtotal+50
   const orderId='CMD-'+Date.now().toString().slice(-5)
 
-  // إضافة بيانات GPS في الملاحظة إذا كانت متوفرة
-  const gpsNote = orderLocation.lat ? `📍GPS: ${orderLocation.lat.toFixed(5)},${orderLocation.lng.toFixed(5)}` : ''
-  const fullNote = [note, gpsNote].filter(Boolean).join(' | ')
-
-  const {error:oe}=await db.from('orders').insert({
-    id:orderId, customer_id:currentUser.id, customer_name:currentUser.name,
-    phone, address:fullAddress, city, subtotal, delivery_fee:50, total,
-    status:'pending', note:fullNote, order_date:new Date().toISOString().split('T')[0]
-  })
+  const {error:oe}=await db.from('orders').insert({id:orderId,customer_id:currentUser.id,customer_name:currentUser.name,phone,address,city:currentUser.city||address,subtotal,delivery_fee:50,total,status:'pending',note,order_date:new Date().toISOString().split('T')[0]})
   if(oe){alert('خطأ في الطلب: '+oe.message);return}
 
   const items=cartItems.map(i=>({order_id:orderId,product_id:i.id,name:i.name+' '+i.volume,emoji:i.emoji,quantity:i.qty,unit_price:i.sell_price}))
@@ -1061,53 +934,10 @@ async function placeOrder() {
   currentUser.points=(currentUser.points||0)+earned
 
   cart={}
-  orderLocation={lat:null,lng:null,wilaya:'',commune:'',address:''}
   await loadData()
-  alert(`🎉 تم تأكيد طلبك!\nرقم الطلب: ${orderId}\n📍 ${fullAddress}\n⭐ نقاط مكتسبة: +${earned}`)
+  alert(`🎉 تم تأكيد طلبك!\nرقم الطلب: ${orderId}\n⭐ نقاط مكتسبة: +${earned}`)
   switchTab('my_history')
 }
 </script>
 </body>
 </html>
-<script>
-// ═══ DRIVER STATS ═══
-function renderDriverStats() {
-  const myDelivered = allOrders.filter(o=>o.driverId===currentUser.id&&o.status==='delivered')
-  const myInTransit = allOrders.filter(o=>o.driverId===currentUser.id&&o.status==='in_transit')
-  const totalEarnings = myDelivered.reduce((s,o)=>s+o.delivery,0)
-  const totalOrders = myDelivered.length
-  return `
-    <div class="page-title">📊 إحصائياتي</div>
-    <div style="background:linear-gradient(135deg,rgba(56,189,248,0.12),rgba(129,140,248,0.08));border:1px solid rgba(56,189,248,0.2);border-radius:20px;padding:24px;text-align:center;margin-bottom:16px">
-      <div style="font-size:52px;margin-bottom:8px">🚗</div>
-      <div style="font-size:22px;font-weight:900">${currentUser.name}</div>
-      <div style="font-size:13px;color:rgba(232,238,255,0.5);margin-top:4px">سائق MADJI PRO</div>
-      <div style="display:flex;justify-content:center;gap:4px;margin-top:10px">
-        ${'⭐⭐⭐⭐⭐'.split('').map((_,i)=>`<span style="font-size:18px">${i<4?'⭐':'☆'}</span>`).join('')}
-        <span style="font-size:14px;font-weight:700;color:var(--warn);margin-right:4px">4.8</span>
-      </div>
-    </div>
-    <div class="kpi-grid">
-      ${kpi(totalOrders,'طلبات مُسلَّمة','#22c55e')}
-      ${kpi(myInTransit.length,'قيد التوصيل','#818cf8')}
-      ${kpi(totalEarnings.toLocaleString()+' دج','أرباح التوصيل','#f59e0b')}
-      ${kpi(allOrders.filter(o=>o.driverId===currentUser.id).length,'إجمالي الطلبات','#38bdf8')}
-    </div>
-    ${myDelivered.length>0?`
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 آخر التوصيلات</div>
-      ${myDelivered.slice(0,5).map(o=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <div>
-            <div style="font-size:13px;font-weight:700">${o.customerName}</div>
-            <div style="font-size:11px;color:rgba(232,238,255,0.4)">${o.date}</div>
-          </div>
-          <div style="text-align:left">
-            <div style="font-size:14px;font-weight:900;color:var(--success)">${o.total} دج</div>
-            <div style="font-size:10px;color:rgba(232,238,255,0.4)">${o.id}</div>
-          </div>
-        </div>`).join('')}
-    </div>`:''}
-  `
-}
-</script>
