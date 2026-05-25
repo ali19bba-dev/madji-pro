@@ -1,137 +1,181 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html id="html-root" dir="rtl" lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MADJI PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#38bdf8">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MADJI PRO">
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<title>MADJI PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Cairo',sans-serif;direction:rtl;background:#070d1a;color:#e8eeff;min-height:100vh}
-:root{--accent:#38bdf8;--accent2:#818cf8;--success:#22c55e;--warn:#f59e0b;--danger:#f43f5e;--border:rgba(255,255,255,0.08);--surface:rgba(255,255,255,0.04)}
+:root{
+  --accent:#38bdf8;--accent2:#818cf8;--success:#22c55e;
+  --warn:#f59e0b;--danger:#f43f5e;
+  --border:rgba(255,255,255,0.08);--surface:rgba(255,255,255,0.04);
+  --bg:#070d1a;--text:#e8eeff;--muted:rgba(232,238,255,0.5);
+}
+html[lang="ar"]{direction:rtl;font-family:'Cairo',sans-serif}
+html[lang="fr"],html[lang="en"]{direction:ltr;font-family:'Poppins','Cairo',sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh}
 .hidden{display:none!important}
-/* LOGIN */
-#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(56,189,248,0.1),transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(129,140,248,0.08),transparent 60%),#070d1a}
+input,button,select,textarea{font-family:inherit}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s}
+#splash.fade-out{opacity:0;pointer-events:none}
+.splash-logo{animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.splash-title{font-size:36px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:16px}
+.splash-sub{font-size:13px;color:var(--muted);margin-top:6px}
+.splash-loader{width:48px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:32px;overflow:hidden}
+.splash-loader-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;animation:load 1.8s ease-in-out forwards}
+@keyframes load{0%{width:0%}100%{width:100%}}
+
+/* ── LOGIN ── */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 30% 20%,rgba(56,189,248,0.1),transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(129,140,248,0.08),transparent 60%),var(--bg)}
 .login-box{width:100%;max-width:380px}
-.logo-center{text-align:center;margin-bottom:32px}
-.logo-svg{margin-bottom:12px}
-.logo-title{font-size:30px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo-sub{font-size:13px;color:rgba(232,238,255,0.5);margin-top:4px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px}
-.field-label{font-size:12px;color:rgba(232,238,255,0.5);margin-bottom:6px}
-.inp{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:#e8eeff;font-size:14px;font-family:'Cairo',sans-serif;outline:none;margin-bottom:14px}
-.inp:focus{border-color:var(--accent)}
-.btn-primary{width:100%;padding:14px;border-radius:14px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#070d1a;font-size:16px;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif}
-.btn{padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;transition:opacity 0.2s}
-.btn-ghost{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:#e8eeff}
-.btn-success{background:#22c55e;color:#070d1a}
-.btn-danger{background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.3);color:var(--danger)}
-.btn-sm{padding:5px 12px;font-size:11px}
-.error-box{background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:14px}
-/* SHELL */
+.login-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:24px;padding:28px;backdrop-filter:blur(20px)}
+.lang-row{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+.lang-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.2s;font-family:inherit}
+.lang-btn.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:var(--bg);border:none;font-weight:700}
+
+/* ── SHELL ── */
 #app-screen{display:flex;flex-direction:column;min-height:100vh}
-.topbar{display:flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(255,255,255,0.025);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
-.topbar-logo{font-size:18px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.topbar-right{margin-right:auto;display:flex;align-items:center;gap:10px}
-.navtabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.015);overflow-x:auto;scrollbar-width:none}
+.topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,0.025);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.topbar-logo{font-size:17px;font-weight:900;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.topbar-right{margin-inline-start:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.role-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);color:var(--accent);white-space:nowrap}
+.navtabs{display:flex;gap:0;padding:0 12px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.015);overflow-x:auto;scrollbar-width:none}
 .navtabs::-webkit-scrollbar{display:none}
-.navtab{padding:11px 16px;border:none;background:none;color:rgba(232,238,255,0.45);font-weight:500;font-size:13px;cursor:pointer;font-family:'Cairo',sans-serif;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s}
+.navtab{padding:11px 14px;border:none;background:none;color:var(--muted);font-weight:500;font-size:12px;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;flex-shrink:0}
 .navtab.active{color:var(--accent);font-weight:800;border-bottom-color:var(--accent)}
-.page{flex:1;padding:20px 18px;overflow:auto}
-/* COMPONENTS */
-.page-title{font-size:20px;font-weight:900;margin-bottom:18px;display:flex;align-items:center;gap:10px}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;border-top-width:3px;border-top-style:solid}
-.kpi-val{font-size:24px;font-weight:900;margin-bottom:2px}
-.kpi-label{font-size:11px;color:rgba(232,238,255,0.5)}
-.table-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{font-size:11px;color:rgba(232,238,255,0.5);font-weight:700;padding:8px 10px;text-align:right;border-bottom:1px solid var(--border)}
-td{font-size:13px;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.page{flex:1;padding:16px;overflow:auto;padding-bottom:80px}
+
+/* ── COMPONENTS ── */
+.btn{padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:var(--bg)}
+.btn-success{background:var(--success);color:var(--bg)}
+.btn-danger{background:rgba(244,63,94,0.15);border:1px solid rgba(244,63,94,0.3);color:var(--danger)}
+.btn-ghost{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text)}
+.btn-full{width:100%;justify-content:center;padding:14px}
+.btn-sm{padding:5px 11px;font-size:11px}
+.inp{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:12px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color 0.2s}
+.inp:focus{border-color:var(--accent)}
+.sel{width:100%;background:#0d1829;border:1px solid var(--border);border-radius:12px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.field-label{font-size:12px;color:var(--muted);margin-bottom:5px;margin-top:10px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.page-title{font-size:20px;font-weight:900;margin-bottom:16px}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;border-top:3px solid var(--accent)}
+.kpi-val{font-size:22px;font-weight:900;color:var(--accent)}
+.kpi-label{font-size:11px;color:var(--muted);margin-top:2px}
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700}
-.alert{border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px;display:flex;gap:10px;align-items:center}
+.alert{border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
 .alert-danger{background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.25)}
 .alert-warn{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25)}
 .alert-info{background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25)}
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
-.modal-box{background:#0d1829;border:1px solid var(--border);border-radius:20px;padding:24px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
-.modal-title{font-size:17px;font-weight:900;margin-bottom:18px}
-.modal-actions{display:flex;gap:10px;margin-top:14px}
-/* GRID */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.sel{width:100%;background:#0d1829;border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:#e8eeff;font-size:13px;font-family:'Cairo',sans-serif;outline:none;margin-bottom:10px}
-/* SPINNER */
-.spinner{text-align:center;padding:40px;color:rgba(232,238,255,0.4);font-size:14px}
-/* PRODUCT GRID */
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;color:var(--muted);font-weight:700;padding:8px 10px;text-align:inherit;border-bottom:1px solid var(--border)}
+td{font-size:13px;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);padding:0}
+.modal-box{background:#0d1829;border:1px solid var(--border);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:17px;font-weight:900;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.prod-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-.prod-top{padding:16px 12px 10px;text-align:center;background:linear-gradient(135deg,rgba(56,189,248,0.08),rgba(129,140,248,0.05))}
+.prod-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform 0.2s}
+.prod-top{padding:14px 10px 10px;text-align:center;background:linear-gradient(135deg,rgba(56,189,248,0.08),rgba(129,140,248,0.05))}
 .prod-bot{padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
-.qty-row{display:flex;align-items:center;gap:6px;background:rgba(56,189,248,0.08);border-radius:8px;padding:2px 6px}
-.qty-btn{width:24px;height:24px;border-radius:6px;background:rgba(56,189,248,0.15);border:none;color:var(--accent);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qty-row{display:flex;align-items:center;gap:5px;background:rgba(56,189,248,0.08);border-radius:8px;padding:2px 5px}
+.qty-btn{width:24px;height:24px;border-radius:6px;background:rgba(56,189,248,0.15);border:none;color:var(--accent);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
 .add-btn{width:32px;height:32px;border-radius:9px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);color:var(--accent);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-/* ORDER CARD */
-.order-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;border-right-width:3px;border-right-style:solid}
-/* PROGRESS */
-.progress-wrap{height:6px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden;margin-top:6px}
+.cat-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.cat-btn{padding:7px 16px;border-radius:50px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.2s;flex-shrink:0}
+.cat-btn.active{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:var(--bg);font-weight:800}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;border-inline-start:3px solid var(--accent)}
+.gps-box{border-radius:12px;padding:14px;margin-bottom:12px}
+.gps-box-idle{background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2)}
+.gps-box-done{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3)}
+.spinner-inline{display:inline-block;width:16px;height:16px;border:2px solid rgba(56,189,248,0.3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-inline-end:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-wrap{height:5px;border-radius:3px;background:rgba(255,255,255,0.08);overflow:hidden}
 .progress-fill{height:100%;border-radius:3px;transition:width 0.5s}
-/* CAT FILTER */
-.cat-row{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
-.cat-btn{padding:8px 18px;border-radius:50px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:rgba(232,238,255,0.5);font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap;font-family:'Cairo',sans-serif;transition:all 0.2s}
-.cat-btn.active{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#070d1a;font-weight:800}
-@media(max-width:600px){.kpi-grid{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;z-index:9998;animation:fadeInUp 0.3s ease;max-width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+@keyframes fadeInUp{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(min-width:600px){.kpi-grid{grid-template-columns:repeat(4,1fr)}.prod-grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
 
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">
+    <svg width="80" height="96" viewBox="0 0 100 120" fill="none">
+      <rect x="35" y="38" width="30" height="60" rx="10" fill="url(#sg)"/>
+      <rect x="41" y="24" width="18" height="18" rx="4" fill="url(#sg)"/>
+      <rect x="39" y="18" width="22" height="10" rx="5" fill="#38bdf8"/>
+      <rect x="38" y="58" width="24" height="37" rx="7" fill="url(#sl)" opacity="0.7"/>
+      <circle cx="47" cy="72" r="2.5" fill="white" opacity="0.5"/>
+      <circle cx="55" cy="80" r="1.8" fill="white" opacity="0.4"/>
+      <rect x="40" y="42" width="5" height="24" rx="2.5" fill="white" opacity="0.25"/>
+      <ellipse cx="50" cy="106" rx="22" ry="10" fill="url(#sh)"/>
+      <rect x="30" y="90" width="8" height="20" rx="4" fill="url(#sh)"/>
+      <rect x="40" y="86" width="8" height="22" rx="4" fill="url(#sh)"/>
+      <rect x="52" y="86" width="8" height="22" rx="4" fill="url(#sh)"/>
+      <rect x="62" y="90" width="8" height="18" rx="4" fill="url(#sh)"/>
+      <defs>
+        <linearGradient id="sg" x1="35" y1="18" x2="65" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
+        <linearGradient id="sl" x1="38" y1="58" x2="62" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8" stop-opacity="0.6"/></linearGradient>
+        <linearGradient id="sh" x1="28" y1="86" x2="72" y2="116" gradientUnits="userSpaceOnUse"><stop stop-color="#f59e0b"/><stop offset="1" stop-color="#d97706"/></linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <div class="splash-title">MADJI PRO</div>
+  <div class="splash-sub" id="splash-sub">منصة توزيع المشروبات الذكية</div>
+  <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+</div>
+
 <!-- LOGIN -->
-<div id="login-screen">
+<div id="login-screen" class="hidden">
   <div class="login-box">
-    <div class="logo-center">
-      <div class="logo-svg">
-        <svg width="80" height="96" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="35" y="38" width="30" height="60" rx="10" fill="url(#bg)"/>
-          <rect x="41" y="24" width="18" height="18" rx="4" fill="url(#bg)"/>
-          <rect x="39" y="18" width="22" height="10" rx="5" fill="#38bdf8"/>
-          <rect x="38" y="58" width="24" height="37" rx="7" fill="url(#lq)" opacity="0.7"/>
-          <circle cx="47" cy="72" r="2.5" fill="white" opacity="0.5"/>
-          <circle cx="55" cy="80" r="1.8" fill="white" opacity="0.4"/>
-          <rect x="40" y="42" width="5" height="24" rx="2.5" fill="white" opacity="0.25"/>
-          <ellipse cx="50" cy="106" rx="22" ry="10" fill="url(#hd)"/>
-          <rect x="30" y="90" width="8" height="20" rx="4" fill="url(#hd)"/>
-          <rect x="40" y="86" width="8" height="22" rx="4" fill="url(#hd)"/>
-          <rect x="52" y="86" width="8" height="22" rx="4" fill="url(#hd)"/>
-          <rect x="62" y="90" width="8" height="18" rx="4" fill="url(#hd)"/>
-          <ellipse cx="27" cy="100" rx="5" ry="8" fill="url(#hd)" transform="rotate(-20 27 100)"/>
-          <defs>
-            <linearGradient id="bg" x1="35" y1="18" x2="65" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
-            <linearGradient id="lq" x1="38" y1="58" x2="62" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8" stop-opacity="0.6"/></linearGradient>
-            <linearGradient id="hd" x1="28" y1="86" x2="72" y2="116" gradientUnits="userSpaceOnUse"><stop stop-color="#f59e0b"/><stop offset="1" stop-color="#d97706"/></linearGradient>
-          </defs>
-        </svg>
-      </div>
-      <div class="logo-title">MADJI PRO</div>
-      <div class="logo-sub">منصة توزيع المشروبات الذكية</div>
+    <div style="text-align:center;margin-bottom:28px">
+      <svg width="64" height="76" viewBox="0 0 100 120" fill="none" style="margin-bottom:12px">
+        <rect x="35" y="38" width="30" height="60" rx="10" fill="url(#lg)"/>
+        <rect x="41" y="24" width="18" height="18" rx="4" fill="url(#lg)"/>
+        <rect x="39" y="18" width="22" height="10" rx="5" fill="#38bdf8"/>
+        <rect x="38" y="58" width="24" height="37" rx="7" fill="url(#ll)" opacity="0.7"/>
+        <ellipse cx="50" cy="106" rx="22" ry="10" fill="#f59e0b"/>
+        <rect x="30" y="90" width="8" height="20" rx="4" fill="#f59e0b"/>
+        <rect x="40" y="86" width="8" height="22" rx="4" fill="#f59e0b"/>
+        <rect x="52" y="86" width="8" height="22" rx="4" fill="#f59e0b"/>
+        <rect x="62" y="90" width="8" height="18" rx="4" fill="#f59e0b"/>
+        <defs>
+          <linearGradient id="lg" x1="35" y1="18" x2="65" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
+          <linearGradient id="ll" x1="38" y1="58" x2="62" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#818cf8" stop-opacity="0.6"/></linearGradient>
+        </defs>
+      </svg>
+      <div style="font-size:28px;font-weight:900;background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">MADJI PRO</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px" id="login-tagline">منصة توزيع المشروبات الذكية</div>
     </div>
-    <div class="card">
-      <div style="font-size:16px;font-weight:800;margin-bottom:18px">تسجيل الدخول</div>
-      <div id="login-error" class="error-box hidden"></div>
-      <div class="field-label">اسم المستخدم</div>
-      <input class="inp" id="inp-username" placeholder="أدخل اسم المستخدم" type="text">
-      <div class="field-label">كلمة المرور</div>
-      <input class="inp" id="inp-password" placeholder="••••••••" type="password">
-      <button class="btn-primary" onclick="doLogin()">دخول ←</button>
-      <div style="text-align:center;margin-top:14px;font-size:12px;color:rgba(232,238,255,0.35)">
-        madji / youssef / sofiane / ali / ahmed — pass: madji2024 أو pass123
-      </div>
+    <div class="lang-row">
+      <button class="lang-btn active" onclick="setLang('ar')">🇩🇿 العربية</button>
+      <button class="lang-btn" onclick="setLang('fr')">🇫🇷 Français</button>
+      <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
+    </div>
+    <div class="login-card">
+      <div style="font-size:16px;font-weight:800;margin-bottom:16px" id="login-title">تسجيل الدخول</div>
+      <div id="login-error" style="background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:14px;display:none"></div>
+      <div class="field-label" id="lbl-username">اسم المستخدم</div>
+      <input class="inp" id="inp-username" style="margin-bottom:12px" autocomplete="username">
+      <div class="field-label" id="lbl-password">كلمة المرور</div>
+      <input class="inp" id="inp-password" type="password" style="margin-bottom:18px" autocomplete="current-password">
+      <button class="btn btn-primary btn-full" onclick="doLogin()" id="btn-login">دخول ←</button>
     </div>
   </div>
 </div>
@@ -139,116 +183,463 @@ td{font-size:13px;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.04
 <!-- APP -->
 <div id="app-screen" class="hidden">
   <div class="topbar">
-    <svg width="28" height="34" viewBox="0 0 100 120" fill="none"><rect x="35" y="38" width="30" height="60" rx="10" fill="url(#tb)"/><rect x="41" y="24" width="18" height="18" rx="4" fill="url(#tb)"/><rect x="39" y="18" width="22" height="10" rx="5" fill="#38bdf8"/><ellipse cx="50" cy="106" rx="22" ry="10" fill="#f59e0b"/><rect x="30" y="90" width="8" height="20" rx="4" fill="#f59e0b"/><rect x="40" y="86" width="8" height="22" rx="4" fill="#f59e0b"/><rect x="52" y="86" width="8" height="22" rx="4" fill="#f59e0b"/><rect x="62" y="90" width="8" height="18" rx="4" fill="#f59e0b"/><defs><linearGradient id="tb" x1="35" y1="18" x2="65" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs></svg>
+    <svg width="26" height="31" viewBox="0 0 100 120" fill="none" style="flex-shrink:0">
+      <rect x="35" y="38" width="30" height="60" rx="10" fill="url(#tb)"/>
+      <rect x="41" y="24" width="18" height="18" rx="4" fill="url(#tb)"/>
+      <rect x="39" y="18" width="22" height="10" rx="5" fill="#38bdf8"/>
+      <ellipse cx="50" cy="106" rx="22" ry="10" fill="#f59e0b"/>
+      <rect x="30" y="90" width="8" height="20" rx="4" fill="#f59e0b"/>
+      <rect x="40" y="86" width="8" height="22" rx="4" fill="#f59e0b"/>
+      <rect x="52" y="86" width="8" height="22" rx="4" fill="#f59e0b"/>
+      <rect x="62" y="90" width="8" height="18" rx="4" fill="#f59e0b"/>
+      <defs><linearGradient id="tb" x1="35" y1="18" x2="65" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#0ea5e9"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+    </svg>
     <div class="topbar-logo">MADJI PRO</div>
     <div class="topbar-right">
-      <span id="user-badge" style="font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);color:var(--accent)"></span>
-      <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="doLogout()">خروج</button>
+      <div style="display:flex;gap:4px">
+        <button onclick="setLang('ar')" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:0.7" id="flag-ar">🇩🇿</button>
+        <button onclick="setLang('fr')" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:0.7" id="flag-fr">🇫🇷</button>
+        <button onclick="setLang('en')" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:0.7" id="flag-en">🇬🇧</button>
+      </div>
+      <span class="role-badge" id="user-badge"></span>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()" id="btn-logout">خروج</button>
     </div>
   </div>
   <div class="navtabs" id="navtabs"></div>
   <div class="page" id="page-content">
-    <div class="spinner">⏳ جاري التحميل...</div>
+    <div style="text-align:center;padding:40px;color:var(--muted)"><span class="spinner-inline"></span></div>
   </div>
 </div>
 
 <!-- MODAL -->
 <div id="modal" class="modal-overlay hidden" onclick="closeModal()">
   <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-title">
+      <span id="modal-title-text"></span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
     <div id="modal-body"></div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════
-//  SUPABASE INIT
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
+//  SUPABASE
+// ════════════════════════════════════════════════
 const { createClient } = supabase
 const db = createClient(
   'https://uadegxrgshjyxyvrmwbd.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZGVneHJnc2hqeXh5dnJtd2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMjcyNDEsImV4cCI6MjA5MjcwMzI0MX0.t6VXQGQ4U8YRawf1PvbolyhiaRZP8nROXQCUO6WWYzk'
 )
 
-// ═══════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════
-let currentUser = null
-let allProducts = []
-let allOrders   = []
-let allUsers    = []
-let allExpenses = []
-let cart        = {}
-let activeTab   = ''
+// ════════════════════════════════════════════════
+//  TRANSLATIONS
+// ════════════════════════════════════════════════
+const T = {
+  ar: {
+    tagline:'منصة توزيع المشروبات الذكية',
+    login:'تسجيل الدخول', username:'اسم المستخدم', password:'كلمة المرور',
+    enter:'دخول ←', logout:'خروج', loading:'جاري التحميل...',
+    wrongUser:'اسم المستخدم غير موجود', wrongPass:'كلمة المرور غير صحيحة',
+    fillFields:'يرجى ملء جميع الحقول',
+    roles:{superadmin:'👑 Super Admin',orders_admin:'📋 مسؤول الطلبات',stock_admin:'🏭 مسؤول المخزن',driver:'🚗 سائق',customer:'👤 زبون'},
+    tabs:{
+      dashboard:'📊 لوحة التحكم', users:'👥 المستخدمون', products:'📦 المنتجات',
+      stock:'🏭 المخزن', orders:'🛒 الطلبات', costs:'💰 التكاليف',
+      new_orders:'📥 جديدة', ready_orders:'📦 جاهزة', transit_orders:'🚚 في الطريق',
+      my_orders:'🚚 طلباتي', done_orders:'✅ مُسلَّمة', driver_stats:'📊 إحصائياتي',
+      shop:'🛒 اطلب الآن', profile:'🏪 محلي', my_history:'📋 طلباتي', points:'⭐ نقاطي'
+    },
+    status:{pending:'قيد الانتظار',ready:'جاهز للشحن',in_transit:'في الطريق',delivered:'تم التسليم',cancelled:'ملغي'},
+    cats:{all:'الكل',gazeous:'غازية',nongaz:'غير غازية',water:'ماء'},
+    gps_btn:'📍 تحديد موقعي بـ GPS', gps_loading:'⏳ جاري تحديد موقعك...', gps_done:'✅ تم تحديد الموقع بدقة',
+    gps_err1:'⚠️ يرجى السماح بالوصول للموقع من إعدادات المتصفح',
+    gps_err2:'⚠️ تأكد من تفعيل GPS', gps_err3:'⚠️ انتهت المهلة، حاول مجدداً',
+    gps_update:'🔄 تحديث الموقع', gps_maps:'🗺️ عرض على Google Maps',
+    gps_desc:'📡 يساعد السائق للوصول إليك بدقة',
+    wilaya:'🏙️ الولاية', commune:'🏘️ البلدية / الدائرة', address:'🏠 العنوان التفصيلي',
+    phone:'📞 رقم الهاتف', note:'💬 ملاحظة للسائق',
+    order_summary:'🛒 ملخص الطلب', delivery_fee:'🚚 رسوم التوصيل', total:'الإجمالي',
+    confirm_order:'✅ تأكيد الطلب', order_confirmed:'🎉 تم تأكيد طلبك!',
+    order_number:'رقم الطلب', points_earned:'⭐ نقاط مكتسبة',
+    new_order:'🛒 طلب جديد', print_bdc:'🖨️ طباعة BDC',
+    save:'💾 حفظ', cancel:'إلغاء', edit:'✏️ تعديل', delete:'🗑️ حذف',
+    add_user:'+ إضافة مستخدم', add_product:'+ منتج جديد', add_expense:'+ إضافة تكلفة',
+    assign_driver:'🚗 إسناد سائق', ready_ship:'✅ جاهز للشحن', confirm_delivery:'✅ تأكيد التسليم',
+    call_customer:'📲 اتصال بالزبون',
+    revenue:'إجمالي المبيعات', net_profit:'الربح الصافي', today_orders:'طلبات اليوم',
+    active_users:'المستخدمون النشطون', gross_profit:'الربح الإجمالي',
+    op_costs:'التكاليف التشغيلية', total_stock:'إجمالي المخزن', low_stock:'مخزون منخفض',
+    expired:'منتهية الصلاحية', product_types:'أنواع المنتجات',
+    greeting_morning:'صباح الخير ☀️', greeting_afternoon:'مساء الخير 🌤️', greeting_evening:'مساء النور 🌙',
+    no_orders:'لا توجد طلبات', no_orders_yet:'لم تقدم أي طلب بعد',
+    select_wilaya:'اختر الولاية', select_commune:'اختر البلدية',
+    shop_name:'🏪 اسم المحل', activity_type:'🗂️ نوع النشاط', start_date:'📅 تاريخ بداية النشاط',
+    commercial_reg:'🔢 رقم السجل التجاري', tax_num:'🧾 الرقم الضريبي (NIF)',
+    add_photo:'📷 إضافة صورة المحل', change_photo:'📷 تغيير الصورة',
+    save_profile:'💾 حفظ ملف المحل', profile_saved:'✅ تم حفظ ملف المحل بنجاح!',
+    sell_price:'سعر البيع (دج)', cost_price:'سعر التكلفة (دج)', stock_qty:'الكمية',
+    min_stock:'الحد الأدنى', expiry:'تاريخ الانتهاء', category:'الفئة', volume:'الحجم',
+    margin:'هامش الربح', add_qty:'+ إضافة كمية', set_qty:'✏️ تعديل الكمية',
+    confirm_delete:'هل أنت متأكد من الحذف؟',
+    deliveries_today:'توصيلات اليوم', earnings:'الأرباح', rating:'التقييم',
+    my_zone:'منطقتي', last_deliveries:'آخر التوصيلات',
+    points_desc:'⭐ كل 100 دج = 10 نقاط',
+    tier_normal:'عادي', tier_bronze:'برونزي', tier_silver:'فضي', tier_gold:'ذهبي', tier_platinum:'بلاتيني',
+    reward_discount:'خصم', reward_delivery:'توصيل مجاني', reward_product:'منتج مجاني',
+    dz:'دج'
+  },
+  fr: {
+    tagline:'Plateforme intelligente de distribution de boissons',
+    login:'Connexion', username:"Nom d'utilisateur", password:'Mot de passe',
+    enter:'Connexion →', logout:'Déconnexion', loading:'Chargement...',
+    wrongUser:'Utilisateur introuvable', wrongPass:'Mot de passe incorrect',
+    fillFields:'Veuillez remplir tous les champs',
+    roles:{superadmin:'👑 Super Admin',orders_admin:'📋 Resp. Commandes',stock_admin:'🏭 Resp. Stock',driver:'🚗 Livreur',customer:'👤 Client'},
+    tabs:{
+      dashboard:'📊 Tableau de bord', users:'👥 Utilisateurs', products:'📦 Produits',
+      stock:'🏭 Stock', orders:'🛒 Commandes', costs:'💰 Coûts',
+      new_orders:'📥 Nouvelles', ready_orders:'📦 Prêtes', transit_orders:'🚚 En route',
+      my_orders:'🚚 Mes livraisons', done_orders:'✅ Livrées', driver_stats:'📊 Statistiques',
+      shop:'🛒 Commander', profile:'🏪 Mon magasin', my_history:'📋 Historique', points:'⭐ Points'
+    },
+    status:{pending:'En attente',ready:'Prêt',in_transit:'En route',delivered:'Livré',cancelled:'Annulé'},
+    cats:{all:'Tout',gazeous:'Gazeux',nongaz:'Non gazeux',water:'Eau'},
+    gps_btn:'📍 Localiser par GPS', gps_loading:'⏳ Localisation en cours...', gps_done:'✅ Position déterminée',
+    gps_err1:'⚠️ Autorisez la localisation dans les paramètres',
+    gps_err2:'⚠️ Activez le GPS', gps_err3:'⚠️ Délai dépassé, réessayez',
+    gps_update:'🔄 Mettre à jour', gps_maps:'🗺️ Voir sur Google Maps',
+    gps_desc:'📡 Aide le livreur à vous localiser précisément',
+    wilaya:'🏙️ Wilaya', commune:'🏘️ Commune / Daïra', address:'🏠 Adresse détaillée',
+    phone:'📞 Téléphone', note:'💬 Note pour le livreur',
+    order_summary:'🛒 Récapitulatif', delivery_fee:'🚚 Frais de livraison', total:'Total',
+    confirm_order:'✅ Confirmer la commande', order_confirmed:'🎉 Commande confirmée!',
+    order_number:'N° commande', points_earned:'⭐ Points gagnés',
+    new_order:'🛒 Nouvelle commande', print_bdc:'🖨️ Imprimer BDC',
+    save:'💾 Enregistrer', cancel:'Annuler', edit:'✏️ Modifier', delete:'🗑️ Supprimer',
+    add_user:'+ Ajouter utilisateur', add_product:'+ Nouveau produit', add_expense:'+ Ajouter coût',
+    assign_driver:'🚗 Affecter livreur', ready_ship:'✅ Prêt à expédier', confirm_delivery:'✅ Confirmer livraison',
+    call_customer:'📲 Appeler client',
+    revenue:'Chiffre d\'affaires', net_profit:'Bénéfice net', today_orders:"Commandes d'aujourd'hui",
+    active_users:'Utilisateurs actifs', gross_profit:'Bénéfice brut',
+    op_costs:'Charges opérationnelles', total_stock:'Stock total', low_stock:'Stock faible',
+    expired:'Produits expirés', product_types:'Types de produits',
+    greeting_morning:'Bonjour ☀️', greeting_afternoon:'Bonne après-midi 🌤️', greeting_evening:'Bonsoir 🌙',
+    no_orders:'Aucune commande', no_orders_yet:'Pas encore de commandes',
+    select_wilaya:'Choisir la wilaya', select_commune:'Choisir la commune',
+    shop_name:'🏪 Nom du commerce', activity_type:"🗂️ Type d'activité", start_date:"📅 Date d'ouverture",
+    commercial_reg:'🔢 N° registre commerce', tax_num:'🧾 NIF',
+    add_photo:'📷 Ajouter photo', change_photo:'📷 Changer photo',
+    save_profile:'💾 Enregistrer profil', profile_saved:'✅ Profil enregistré!',
+    sell_price:'Prix vente (DA)', cost_price:'Prix revient (DA)', stock_qty:'Quantité',
+    min_stock:'Stock minimum', expiry:'Date expiration', category:'Catégorie', volume:'Volume',
+    margin:'Marge', add_qty:'+ Ajouter quantité', set_qty:'✏️ Modifier quantité',
+    confirm_delete:'Confirmer la suppression?',
+    deliveries_today:"Livraisons aujourd'hui", earnings:'Gains', rating:'Note', my_zone:'Ma zone',
+    last_deliveries:'Dernières livraisons',
+    points_desc:'⭐ 100 DA = 10 points',
+    tier_normal:'Normal', tier_bronze:'Bronze', tier_silver:'Argent', tier_gold:'Or', tier_platinum:'Platine',
+    reward_discount:'Réduction', reward_delivery:'Livraison gratuite', reward_product:'Produit gratuit',
+    dz:'DA'
+  },
+  en: {
+    tagline:'Smart Beverage Distribution Platform',
+    login:'Login', username:'Username', password:'Password',
+    enter:'Login →', logout:'Logout', loading:'Loading...',
+    wrongUser:'User not found', wrongPass:'Wrong password',
+    fillFields:'Please fill all fields',
+    roles:{superadmin:'👑 Super Admin',orders_admin:'📋 Orders Manager',stock_admin:'🏭 Stock Manager',driver:'🚗 Driver',customer:'👤 Customer'},
+    tabs:{
+      dashboard:'📊 Dashboard', users:'👥 Users', products:'📦 Products',
+      stock:'🏭 Stock', orders:'🛒 Orders', costs:'💰 Costs',
+      new_orders:'📥 New', ready_orders:'📦 Ready', transit_orders:'🚚 In Transit',
+      my_orders:'🚚 My Deliveries', done_orders:'✅ Delivered', driver_stats:'📊 My Stats',
+      shop:'🛒 Order Now', profile:'🏪 My Shop', my_history:'📋 My Orders', points:'⭐ Points'
+    },
+    status:{pending:'Pending',ready:'Ready',in_transit:'In Transit',delivered:'Delivered',cancelled:'Cancelled'},
+    cats:{all:'All',gazeous:'Sparkling',nongaz:'Still',water:'Water'},
+    gps_btn:'📍 Locate via GPS', gps_loading:'⏳ Locating...', gps_done:'✅ Location found',
+    gps_err1:'⚠️ Please allow location access in browser settings',
+    gps_err2:'⚠️ Please enable GPS', gps_err3:'⚠️ Timeout, try again',
+    gps_update:'🔄 Update location', gps_maps:'🗺️ View on Google Maps',
+    gps_desc:'📡 Helps driver reach you accurately',
+    wilaya:'🏙️ Wilaya', commune:'🏘️ Commune / Daïra', address:'🏠 Detailed address',
+    phone:'📞 Phone number', note:'💬 Note for driver',
+    order_summary:'🛒 Order Summary', delivery_fee:'🚚 Delivery fee', total:'Total',
+    confirm_order:'✅ Confirm Order', order_confirmed:'🎉 Order confirmed!',
+    order_number:'Order number', points_earned:'⭐ Points earned',
+    new_order:'🛒 New Order', print_bdc:'🖨️ Print BDC',
+    save:'💾 Save', cancel:'Cancel', edit:'✏️ Edit', delete:'🗑️ Delete',
+    add_user:'+ Add User', add_product:'+ New Product', add_expense:'+ Add Cost',
+    assign_driver:'🚗 Assign Driver', ready_ship:'✅ Ready to Ship', confirm_delivery:'✅ Confirm Delivery',
+    call_customer:'📲 Call Customer',
+    revenue:'Total Revenue', net_profit:'Net Profit', today_orders:"Today's Orders",
+    active_users:'Active Users', gross_profit:'Gross Profit',
+    op_costs:'Operating Costs', total_stock:'Total Stock', low_stock:'Low Stock',
+    expired:'Expired Products', product_types:'Product Types',
+    greeting_morning:'Good Morning ☀️', greeting_afternoon:'Good Afternoon 🌤️', greeting_evening:'Good Evening 🌙',
+    no_orders:'No orders', no_orders_yet:'No orders yet',
+    select_wilaya:'Select Wilaya', select_commune:'Select Commune',
+    shop_name:'🏪 Shop Name', activity_type:'🗂️ Activity Type', start_date:'📅 Start Date',
+    commercial_reg:'🔢 Commercial Register', tax_num:'🧾 Tax Number (NIF)',
+    add_photo:'📷 Add Shop Photo', change_photo:'📷 Change Photo',
+    save_profile:'💾 Save Profile', profile_saved:'✅ Profile saved!',
+    sell_price:'Sell Price (DA)', cost_price:'Cost Price (DA)', stock_qty:'Quantity',
+    min_stock:'Min Stock', expiry:'Expiry Date', category:'Category', volume:'Volume',
+    margin:'Margin', add_qty:'+ Add Quantity', set_qty:'✏️ Set Quantity',
+    confirm_delete:'Confirm deletion?',
+    deliveries_today:'Deliveries today', earnings:'Earnings', rating:'Rating', my_zone:'My Zone',
+    last_deliveries:'Last Deliveries',
+    points_desc:'⭐ 100 DA = 10 points',
+    tier_normal:'Normal', tier_bronze:'Bronze', tier_silver:'Silver', tier_gold:'Gold', tier_platinum:'Platinum',
+    reward_discount:'Discount', reward_delivery:'Free Delivery', reward_product:'Free Product',
+    dz:'DA'
+  }
+}
 
-// ═══════════════════════════════════════
-//  LOGIN
-// ═══════════════════════════════════════
-document.getElementById('inp-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin() })
+// ════════════════════════════════════════════════
+//  WILAYAS - 58 WILAYAS (NEW ALGERIAN DIVISION)
+// ════════════════════════════════════════════════
+const WILAYAS = {
+'01 - أدرار':['أدرار','رقان','تيميمون','برات','أولف','بودة','زاوية كنتة','تسابيت','أقبلي','فنوغيل','تالمين','أنزكمير','بوداء','تيت','تيمياووين','كنتة','فنتر','إن زغمير'],
+'02 - الشلف':['الشلف','تنس','بنايرية','الكريمية','بريرة','بوزغاية','حرشون','الهرانفة','الخطاب','زدين','أبو الحسن','مصدق','وادي فضة','أم الدروع','برج بونعامة','سيدي عكاشة','الأمير عبد القادر'],
+'03 - الأغواط':['الأغواط','آفلو','حاسي الرمل','قصر الهيران','سيدي مخلوف','بريدة','تاجموت','عين ماضي','سبقاق','قلتة سيدي سعد','حاسي دلاعة','برج الغدير'],
+'04 - أم البواقي':['أم البواقي','عين البيضاء','عين فكرون','العامري','مسكيانة','عين مليلة','سوق نعمان','الفجوج','البلالة','عين القصب','ذراع الغزال','عين كرشة'],
+'05 - باتنة':['باتنة','عين توتة','مروانة','أريس','تكوت','بريكة','قصبة','بسكرية','فسديس','أولاد سي سليمان','لمسان','نقاوس','عين جاسر','تيمقاد','بولهيلات','شير','عزيل عبد القادر','مروانة'],
+'06 - بجاية':['بجاية','أقبو','خراطة','سيدي عيش','أميزور','فنايا إيلماتن','الكروب','تيزي نبربر','بني يني','سوق الإثنين','تيشي','أيت رزين','إيغيل آلي','بني كسيلة','تاسكريوت'],
+'07 - بسكرة':['بسكرة','طولقة','سيدي عقبة','أورلال','أوماش','القنطرة','زريبة الوادي','المزيرعة','شتمة','برانيس','الحاجب','ليشانة','مشونش','سيدي خالد'],
+'08 - بشار':['بشار','عين الصفراء','أبادلة','بني ونيف','تبلبالة','كرزاز','مريجة','القنادسة','إش','تاغيت','بني ابيض','مرهوم'],
+'09 - البليدة':['البليدة','بوفاريك','الأربعاء','بني تامو','أولاد يعيش','بن خليل','موزاية','شفا','شريعة','عين رومانة','سيدي موسى','لاربعاء ناث عيراث'],
+'10 - البويرة':['البويرة','سور الغزلان','أقبيل','لخضارية','الحجرة','عين بسام','بشلول','أغبالو','برج أوخريص','مزراء','بودربالة','عين الحجر أبي علي'],
+'11 - تمنراست':['تمنراست','إن قزام','إن صالح','إن گار','إدلس','الويلن','أبالسة'],
+'12 - تبسة':['تبسة','الشريعة','بئر العاتر','عين زروق','الونزة','مرسط','النقرين','فركان','الحمامات','بئر الذهب','عين الزرقاء'],
+'13 - تلمسان':['تلمسان','مغنية','الغزوات','رمشي','صبرة','سبدو','بني سنوس','بني بوسعيد','العريشة','أندلس','بني خلاد','سيدي مجاهد','بنيان','تيغنيف','عين تالوت'],
+'14 - تيارت':['تيارت','فرندة','مشرع الصفا','رحوية','الأغلال','الناظورة','قصر الشلالة','دحموني','سيدي عبد الرحمن','رحاحلية','عين بوشقيف','تخمارت'],
+'15 - تيزي وزو':['تيزي وزو','ذراع الميزان','عزازقة','بني دوالة','أيت محمود','أيت يحيى','بوجيلوف','إينير','واضية','لربعاء ناث إيراثن','مكيرة','تيزي ن تلاثة','بوزقن','أيت خليلي'],
+'16 - الجزائر':['الجزائر الوسطى','باب الوادي','باب الزوار','بن عكنون','الحراش','برج البحري','الرويبة','رياض الفتح','الدار البيضاء','بئر مراد رايس','بئر خادم','حسين داي','القبة','المحمدية','الشراقة','درارية','الأبيار','سيدي موسى','الرغاية','حمامات الدالية'],
+'17 - الجلفة':['الجلفة','مسعد','عين وسارة','بيرين','سيدي لعجال','حاسي بحبح','تعظيمت','دار الشيوخ','عموري','عين إبل','سلمانة'],
+'18 - جيجل':['جيجل','الميلية','الطاهير','العوانة','شقفة','زيامة منصورية','سلمى بن زيادة','غبالة','بوراوي بلهادف','جيملة','كاوان'],
+'19 - سطيف':['سطيف','العلمة','برج بوعريريج','عين أزال','بئر العرش','قجال','عين ولمان','أولاد صالح','مزلوق','بازر سكرة','أيت نويلة','عين الكبيرة','عين أرنات'],
+'20 - سعيدة':['سعيدة','عين الحجر','يوب','سيدي بوبكر','دوي تابت','تيرار','أولاد إبراهيم','المعمورة'],
+'21 - سكيكدة':['سكيكدة','عزابة','القل','الحروش','فلفلة','زيغود يوسف','تالة','خنق ميمون','أم الطبول'],
+'22 - سيدي بلعباس':['سيدي بلعباس','تلاغ','مرحوم','سيدي إبراهيم','عين تيندامين','أولاد خالد','مصطفى بن إبراهيم','سهلة الثورة','تنيرة','حاسي زهانة'],
+'23 - عنابة':['عنابة','البرجة','سيدي عمار','حجار','الشريعة','برحال','ولجة تبوشة'],
+'24 - قالمة':['قالمة','القل','عين مخلوف','بوشقوف','الرقاية','بلخير','بوحمدان','لخزارة','قلعة بوزيان'],
+'25 - قسنطينة':['قسنطينة','الخروب','عين عبيد','حامة بوزيان','ديدوش مراد','زيغود يوسف','ابن زياد','الحامة'],
+'26 - المدية':['المدية','بوعيش','قصر البخاري','كاف لحمر','العزيزية','سي محمود','شلالة العذاورة','بني سليمان','أولاد دايد','بن شقورة'],
+'27 - مستغانم':['مستغانم','عين تادلس','المشرية','فروحة','سيدي عيسى','حاسي ماماش','خضرة','منصورة','صيادة'],
+'28 - مسيلة':['مسيلة','بوسعادة','سيدي عيسى','عين الخضراء','محمد بوضياف','برهوم','أولاد دراج','سلوم','أولاد مادي','بن سرور'],
+'29 - معسكر':['معسكر','غريس','تيغنيف','المحمدية','سيق','بوهني','عقاز','الحشم','فروحة','زلامطة'],
+'30 - ورقلة':['ورقلة','النقوسة','تقرت','حاسي مسعود','سيدي قلعون','المقارين','عين البيضاء','تبسبست','بلدة عمر'],
+'31 - وهران':['وهران','عين الترك','مرسى الكبير','الأندلس','بطيوة','بئر الجير','سيدي الشحمي','حاسي بونيف','القطنة','طفراوي','بوتليليس'],
+'32 - البيض':['البيض','بوقطب','الأبيض سيدي الشيخ','الشقيق','المحبس','ستيتن','بريزينة','القصب'],
+'33 - إليزي':['إليزي','دبداب','برج عمر إدريس','إن أمناس','جانت'],
+'34 - برج بوعريريج':['برج بوعريريج','رأس الوادي','العش','الأنصر','تقلعت','منصورة','تيخسباين','برج زمورة','عين تاغروت'],
+'35 - بومرداس':['بومرداس','بودواو','دلس','ثنية الحد','إسطبول','خميس الخشنة','الناصرية','أومال','زموري'],
+'36 - الطارف':['الطارف','القل','ابن زياد','الذرعان','عصفور','زريزر','شحيمة','بوحجار','بريحان'],
+'37 - تيندوف':['تيندوف','أم العسل'],
+'38 - تيسمسيلت':['تيسمسيلت','خميستي','العيون','الأرباء','برج بونعامة','بوقاعة','ثنية الحد','عين الكحلة'],
+'39 - الوادي':['الوادي','الرقيبة','جامعة','الطالب العربي','حاسي خليفة','الدبيلة','كوينين','بن قشة','الشط','مقرار'],
+'40 - خنشلة':['خنشلة','بغاي','شلية','أنسيغة','بابار','ريچانة','المحمل','تاوزيانت'],
+'41 - سوق أهراس':['سوق أهراس','صدوق','مداوروش','سخنة','أم العظائم','مشروحة','تاورة','لمباسيس'],
+'42 - تيبازة':['تيبازة','الشرفة','بواقي','أحمر العين','دوار الحجر','خميستي','سيدي عمر','بوهارون','شرشال'],
+'43 - ميلة':['ميلة','فرجيوة','شلغوم العيد','أحمد راشدي','الطاية','وادي عتيبة','سيدي مروان','بن يحيى عبد الرحمن','تسادان'],
+'44 - عين الدفلى':['عين الدفلى','الخميس','العطاف','عين الصلاح','جمعة أولاد شيخ','مصدق','حمام ريغة','بربر','تاشتة'],
+'45 - النعامة':['النعامة','مشرية','عسلة','صفيصيفة','تيوت','موغل','جنين بورزق'],
+'46 - عين تموشنت':['عين تموشنت','بني صاف','سيدي بن عدة','أولاد كيحل','البلاطة','سبع','حمام بوحجر'],
+'47 - غرداية':['غرداية','بريان','متليلي الشعانبة','القرارة','بنورة','الأطرف','زلفانة','المنيعة','ضاية بن ضحوة'],
+'48 - غليزان':['غليزان','رليزان','الجمعة','أولاد يعيش','سيدي خطاب','عمي موسى','جديوية','مسرة'],
+'49 - تيميمون':['تيميمون','أوقروت','شروين','أولف','تالمين','أنزكمير','متارفة','قصر قدور'],
+'50 - برج باجي مختار':['برج باجي مختار','تيمياووين','إن قزام'],
+'51 - أولاد جلال':['أولاد جلال','سيدي خالد','ليشانة','الدوسن','راس الميعاد'],
+'52 - بني عباس':['بني عباس','كرزاز','بني ونيف','ثالثة','إقلي'],
+'53 - إن صالح':['إن صالح','إن قزام','فوقارت','إن أمقل'],
+'54 - إن قزام':['إن قزام','تين زواتين','بوريج'],
+'55 - توقرت':['توقرت','النزلة','الحجيرة','تماسين','بلدة عمر','المقارين'],
+'56 - جانت':['جانت','إليزي','دبداب'],
+'57 - المغير':['المغير','جامعة','الرقيبة','سيدي خليل','سطح الهامل'],
+'58 - المنيعة':['المنيعة','حاسي الفحل','ذاية بن ضحوة','القرارة']
+}
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+let lang = localStorage.getItem('madji_lang') || 'ar'
+let currentUser = null
+let allProducts = [], allOrders = [], allUsers = [], allExpenses = []
+let cart = {}, activeTab = ''
+let orderLocation = {lat:null, lng:null, wilaya:'', commune:'', address:''}
+let shopProfile = {shopName:'',commercialReg:'',taxNumber:'',activityType:'',startDate:'',wilaya:'',commune:'',address:'',lat:null,lng:null,photoUrl:null,phone2:''}
+let driverLocationInterval = null
+
+// Shortcut for translation
+const t = key => T[lang][key] || T['ar'][key] || key
+const tStatus = s => T[lang].status[s] || s
+const tTab = k => T[lang].tabs[k] || k
+
+// ════════════════════════════════════════════════
+//  LANGUAGE
+// ════════════════════════════════════════════════
+function setLang(l) {
+  lang = l
+  localStorage.setItem('madji_lang', l)
+  const html = document.getElementById('html-root')
+  html.setAttribute('lang', l)
+  html.setAttribute('dir', l === 'ar' ? 'rtl' : 'ltr')
+
+  // Update login page text
+  document.querySelectorAll('.lang-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['ar','fr','en'][i] === l)
+  })
+  const tagline = document.getElementById('login-tagline')
+  if(tagline) tagline.textContent = t('tagline')
+  const splashSub = document.getElementById('splash-sub')
+  if(splashSub) splashSub.textContent = t('tagline')
+
+  const loginTitle = document.getElementById('login-title')
+  if(loginTitle) loginTitle.textContent = t('login')
+  const lblUser = document.getElementById('lbl-username')
+  if(lblUser) lblUser.textContent = t('username')
+  const lblPass = document.getElementById('lbl-password')
+  if(lblPass) lblPass.textContent = t('password')
+  const btnLogin = document.getElementById('btn-login')
+  if(btnLogin) btnLogin.textContent = t('enter')
+  const btnLogout = document.getElementById('btn-logout')
+  if(btnLogout) btnLogout.textContent = t('logout')
+
+  // Update flag opacity
+  ;['ar','fr','en'].forEach(code => {
+    const flag = document.getElementById('flag-'+code)
+    if(flag) flag.style.opacity = code === l ? '1' : '0.5'
+  })
+
+  if(currentUser) { renderNav(); renderPage() }
+}
+
+// ════════════════════════════════════════════════
+//  SPLASH & BOOT
+// ════════════════════════════════════════════════
+window.addEventListener('load', async () => {
+  setLang(lang)
+  setTimeout(async () => {
+    const splash = document.getElementById('splash')
+    splash.classList.add('fade-out')
+    setTimeout(() => splash.style.display = 'none', 500)
+
+    // Check saved session (persistent login)
+    const saved = localStorage.getItem('madji_session')
+    if(saved) {
+      try {
+        const session = JSON.parse(saved)
+        // Verify session not expired (30 days)
+        if(session.expiry > Date.now()) {
+          // Re-verify user from DB
+          const { data } = await db.from('users').select('*').eq('id', session.userId).eq('active', true).single()
+          if(data && data.password_hash === session.passwordHash) {
+            currentUser = data
+            document.getElementById('login-screen').classList.add('hidden')
+            document.getElementById('app-screen').classList.remove('hidden')
+            await initApp()
+            return
+          }
+        }
+      } catch(e) {}
+      localStorage.removeItem('madji_session')
+    }
+    document.getElementById('login-screen').classList.remove('hidden')
+  }, 1800)
+})
+
+// ════════════════════════════════════════════════
+//  LOGIN / LOGOUT
+// ════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && document.getElementById('inp-password') === document.activeElement) doLogin()
+})
 
 async function doLogin() {
   const username = document.getElementById('inp-username').value.trim()
   const password = document.getElementById('inp-password').value.trim()
   const errEl = document.getElementById('login-error')
-  errEl.classList.add('hidden')
+  const btnLogin = document.getElementById('btn-login')
+  errEl.style.display = 'none'
 
-  if (!username || !password) {
-    errEl.textContent = '⚠️ يرجى إدخال اسم المستخدم وكلمة المرور'
-    errEl.classList.remove('hidden')
-    return
+  if(!username || !password) {
+    errEl.textContent = t('fillFields'); errEl.style.display = 'block'; return
   }
 
-  try {
-    const { data, error } = await db.from('users')
-      .select('*')
-      .eq('username', username)
-      .eq('active', true)
+  btnLogin.disabled = true
+  btnLogin.innerHTML = `<span class="spinner-inline"></span> ${t('loading')}`
 
-    if (error) throw new Error('خطأ في الاتصال: ' + error.message)
-    if (!data || data.length === 0) throw new Error('اسم المستخدم غير موجود')
-    
+  try {
+    const { data, error } = await db.from('users').select('*').eq('username', username).eq('active', true)
+    if(error || !data || data.length === 0) throw new Error(t('wrongUser'))
     const user = data[0]
-    if (user.password_hash !== password) throw new Error('كلمة المرور غير صحيحة')
+    if(user.password_hash !== password) throw new Error(t('wrongPass'))
+
+    // Save persistent session (30 days)
+    localStorage.setItem('madji_session', JSON.stringify({
+      userId: user.id,
+      passwordHash: user.password_hash,
+      expiry: Date.now() + (30 * 24 * 60 * 60 * 1000)
+    }))
 
     currentUser = user
     document.getElementById('login-screen').classList.add('hidden')
     document.getElementById('app-screen').classList.remove('hidden')
-    initApp()
+    await initApp()
   } catch(e) {
-    errEl.textContent = '⚠️ ' + e.message
-    errEl.classList.remove('hidden')
+    errEl.textContent = '⚠️ ' + e.message; errEl.style.display = 'block'
+  } finally {
+    btnLogin.disabled = false; btnLogin.textContent = t('enter')
   }
 }
 
 function doLogout() {
-  currentUser = null; cart = {}
+  localStorage.removeItem('madji_session')
+  currentUser = null; cart = {}; activeTab = ''
+  if(driverLocationInterval) { clearInterval(driverLocationInterval); driverLocationInterval = null }
   document.getElementById('app-screen').classList.add('hidden')
   document.getElementById('login-screen').classList.remove('hidden')
   document.getElementById('inp-password').value = ''
+  showToast('👋 ' + t('logout'))
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  APP INIT
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 const ROLE_TABS = {
-  superadmin:   [{k:'dashboard',l:'📊 لوحة التحكم'},{k:'users',l:'👥 المستخدمون'},{k:'products',l:'📦 المنتجات'},{k:'stock',l:'🏭 المخزن'},{k:'orders',l:'🛒 الطلبات'},{k:'costs',l:'💰 التكاليف'}],
-  orders_admin: [{k:'new_orders',l:'📥 جديدة'},{k:'ready_orders',l:'📦 جاهزة'},{k:'transit_orders',l:'🚚 في الطريق'}],
-  stock_admin:  [{k:'stock',l:'🏭 المخزن'}],
-  driver:       [{k:'my_orders',l:'🚚 طلباتي'},{k:'done_orders',l:'✅ المُسلَّمة'},{k:'driver_stats',l:'📊 إحصائياتي'}],
-  customer:     [{k:'shop',l:'🛒 اطلب الآن'},{k:'profile',l:'🏪 محلي'},{k:'my_history',l:'📋 طلباتي'},{k:'points',l:'⭐ نقاطي'}],
+  superadmin:   ['dashboard','users','products','stock','orders','costs'],
+  orders_admin: ['new_orders','ready_orders','transit_orders'],
+  stock_admin:  ['stock'],
+  driver:       ['my_orders','done_orders','driver_stats'],
+  customer:     ['shop','profile','my_history','points'],
 }
 
 async function initApp() {
   const role = currentUser.role
-  document.getElementById('user-badge').textContent = {superadmin:'👑 Super Admin',orders_admin:'📋 مسؤول الطلبات',stock_admin:'🏭 مسؤول المخزن',driver:'🚗 سائق',customer:'👤 زبون'}[role] + ' — ' + currentUser.name
+  document.getElementById('user-badge').textContent = t('roles')[role] + ' — ' + currentUser.name
+  document.getElementById('btn-logout').textContent = t('logout')
 
-  const tabs = ROLE_TABS[role] || []
-  const nav = document.getElementById('navtabs')
-  nav.innerHTML = tabs.map(t => `<button class="navtab" onclick="switchTab('${t.k}')">${t.l}</button>`).join('')
+  // Load shop profile from localStorage
+  const savedProfile = localStorage.getItem('shopProfile_' + currentUser.id)
+  if(savedProfile) try { shopProfile = {...shopProfile, ...JSON.parse(savedProfile)} } catch(e){}
+
+  // Start driver location tracking
+  if(role === 'driver') startDriverTracking()
 
   await loadData()
-  loadShopProfile()
-  switchTab(tabs[0]?.k || '')
+  renderNav()
+  const tabs = ROLE_TABS[role] || []
+  switchTab(tabs[0] || '')
+  setLang(lang)
+}
+
+function renderNav() {
+  const tabs = ROLE_TABS[currentUser?.role] || []
+  document.getElementById('navtabs').innerHTML = tabs.map(k =>
+    `<button class="navtab ${k===activeTab?'active':''}" onclick="switchTab('${k}')">${tTab(k)}</button>`
+  ).join('')
 }
 
 async function loadData() {
@@ -266,72 +657,78 @@ async function loadData() {
 
 function mapOrder(o) {
   return {
-    id: o.id, customerId: o.customer_id, customerName: o.customer_name,
-    phone: o.phone, address: o.address, city: o.city,
-    subtotal: o.subtotal, delivery: o.delivery_fee, total: o.total,
-    status: o.status, driverId: o.driver_id, driverName: o.driver_name,
-    note: o.note, printed: o.printed, date: o.order_date,
-    items: (o.order_items||[]).map(i=>({productId:i.product_id,name:i.name,emoji:i.emoji,qty:i.quantity,price:i.unit_price}))
+    id:o.id, customerId:o.customer_id, customerName:o.customer_name,
+    phone:o.phone, address:o.address, city:o.city,
+    subtotal:o.subtotal, delivery:o.delivery_fee, total:o.total,
+    status:o.status, driverId:o.driver_id, driverName:o.driver_name,
+    note:o.note, printed:o.printed, date:o.order_date,
+    items:(o.order_items||[]).map(i=>({productId:i.product_id,name:i.name,emoji:i.emoji,qty:i.quantity,price:i.unit_price}))
   }
 }
 
 function switchTab(key) {
   activeTab = key
-  document.querySelectorAll('.navtab').forEach((b,i)=>{
-    const tabs = ROLE_TABS[currentUser.role]||[]
-    b.classList.toggle('active', tabs[i]?.k === key)
-  })
+  renderNav()
   renderPage()
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  RENDER ROUTER
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderPage() {
   const el = document.getElementById('page-content')
-  const renders = {
+  const R = {
     dashboard: renderDashboard, users: renderUsers,
-    products: renderProducts, orders: renderOrders, costs: renderCosts,
+    products: renderProducts, stock: renderStock,
+    orders: renderOrders, costs: renderCosts,
     new_orders: ()=>renderOrdersAdmin('pending'),
     ready_orders: ()=>renderOrdersAdmin('ready'),
     transit_orders: ()=>renderOrdersAdmin('in_transit'),
-    stock: renderStock,
-    my_orders: ()=>renderDriverOrders(false),
     my_orders: ()=>renderDriverOrders(false),
     done_orders: ()=>renderDriverOrders(true),
     driver_stats: renderDriverStats,
-    shop: renderShop, my_history: renderMyHistory, points: renderPoints, profile: renderProfile,
+    shop: renderShop, profile: renderProfile,
+    my_history: renderMyHistory, points: renderPoints,
   }
-  const fn = renders[activeTab]
-  el.innerHTML = fn ? fn() : '<div class="spinner">الصفحة غير موجودة</div>'
+  const fn = R[activeTab]
+  el.innerHTML = fn ? fn() : `<div style="text-align:center;padding:40px;color:var(--muted)">404</div>`
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  HELPERS
-// ═══════════════════════════════════════
-const STATUS = {
-  pending:    {l:'قيد الانتظار', c:'#f59e0b'},
-  ready:      {l:'جاهز للشحن',   c:'#a78bfa'},
-  in_transit: {l:'في الطريق',    c:'#38bdf8'},
-  delivered:  {l:'تم التسليم',   c:'#22c55e'},
-  cancelled:  {l:'ملغي',         c:'#f43f5e'},
-}
+// ════════════════════════════════════════════════
+const STATUS_COLORS = {pending:'#f59e0b',ready:'#a78bfa',in_transit:'#38bdf8',delivered:'#22c55e',cancelled:'#f43f5e'}
 const badge = (label, color) => `<span class="badge" style="background:${color}22;color:${color}">${label}</span>`
-const kpi   = (val, label, color, sub='') => `<div class="kpi" style="border-top-color:${color}"><div class="kpi-val" style="color:${color}">${val}</div><div class="kpi-label">${label}</div>${sub?`<div style="font-size:11px;color:${color};margin-top:3px">${sub}</div>`:''}</div>`
+const kpi = (val, label, color, sub='') => `<div class="kpi" style="border-top-color:${color}"><div class="kpi-val" style="color:${color}">${val}</div><div class="kpi-label">${label}</div>${sub?`<div style="font-size:10px;color:${color};margin-top:2px">${sub}</div>`:''}</div>`
 const daysUntil = d => Math.floor((new Date(d)-new Date())/86400000)
+const fmtDate = d => d || ''
+const dz = n => `${n.toLocaleString()} ${t('dz')}`
+
+function showToast(msg, duration=3000) {
+  const existing = document.querySelector('.toast')
+  if(existing) existing.remove()
+  const toast = document.createElement('div')
+  toast.className = 'toast'
+  toast.textContent = msg
+  document.body.appendChild(toast)
+  setTimeout(() => toast.remove(), duration)
+}
 
 function printBDC(o) {
-  const rows = o.items.map(i=>`<tr><td>${i.emoji} ${i.name}</td><td style="text-align:center">${i.qty}</td><td style="text-align:center">${i.price} دج</td><td style="text-align:center">${i.price*i.qty} دج</td></tr>`).join('')
-  const w = window.open('','_blank')
-  w.document.write(`<html dir="rtl"><head><meta charset="utf-8"><title>BDC-${o.id}</title>
-  <style>@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-  *{box-sizing:border-box}body{font-family:'Cairo',sans-serif;padding:32px;color:#111;max-width:600px;margin:0 auto}
-  h1{font-size:26px;font-weight:900;color:#0288d1}hr{border:none;border-top:3px double #0288d1;margin:14px 0}
+  const lang_bdc = lang
+  const T_bdc = T[lang_bdc]
+  const win = window.open('','_blank')
+  const rows = o.items.map(i=>`<tr><td>${i.emoji} ${i.name}</td><td style="text-align:center">${i.qty}</td><td style="text-align:center">${i.price} ${T_bdc.dz}</td><td style="text-align:center">${i.price*i.qty} ${T_bdc.dz}</td></tr>`).join('')
+  win.document.write(`<html dir="${lang_bdc==='ar'?'rtl':'ltr'}"><head><meta charset="utf-8"><title>BDC-${o.id}</title>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Poppins:wght@400;700;900&display=swap');
+  *{box-sizing:border-box}body{font-family:${lang_bdc==='ar'?"'Cairo'":"'Poppins'"}, sans-serif;padding:32px;color:#111;max-width:600px;margin:0 auto}
+  h1{font-size:24px;font-weight:900;color:#0288d1}.sub{font-size:12px;color:#666}
+  hr{border:none;border-top:3px double #0288d1;margin:14px 0}
   .meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
   .mb{background:#f8faff;border-radius:10px;padding:12px;border:1px solid #e2e8f0;font-size:13px}
   .ml{font-size:10px;color:#999;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
   table{width:100%;border-collapse:collapse;margin-bottom:16px}
-  th{background:#0288d1;color:#fff;padding:9px 12px;text-align:right;font-size:12px}
+  th{background:#0288d1;color:#fff;padding:9px 12px;text-align:${lang_bdc==='ar'?'right':'left'};font-size:12px}
   td{padding:9px 12px;border-bottom:1px solid #eef;font-size:13px}
   tr:nth-child(even) td{background:#f8faff}
   .tot{background:#f8faff;border-radius:10px;padding:14px}
@@ -340,89 +737,150 @@ function printBDC(o) {
   .sigs{display:flex;justify-content:space-around;margin-top:28px;padding-top:20px;border-top:1px dashed #ddd}
   .sig{text-align:center}.sig-l{font-size:11px;color:#999;margin-bottom:8px}.sig-line{width:120px;height:40px;border-bottom:1px solid #333}
   .footer{text-align:center;margin-top:24px;font-size:11px;color:#bbb;border-top:1px solid #eee;padding-top:14px}
+  .gps-info{background:#e0f7fa;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:12px;color:#0277bd}
   @media print{body{padding:16px}}</style></head><body>
-  <h1>⚡ MADJI PRO</h1><div style="font-size:13px;color:#666">منصة توزيع المشروبات الذكية</div>
+  <h1>⚡ MADJI PRO</h1><div class="sub">${T_bdc.tagline}</div>
   <hr>
-  <div style="font-size:18px;font-weight:900;margin-bottom:14px">📋 بون دي كوماند — ${o.id}</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-size:18px;font-weight:900">📋 BON DE COMMANDE</div>
+    <div>
+      <div style="font-size:20px;font-weight:900;color:#0288d1;letter-spacing:2px">${o.id}</div>
+      <div style="font-size:11px;color:#999">${o.date}</div>
+    </div>
+  </div>
   <div class="meta">
-    <div class="mb"><div class="ml">الزبون</div><strong>${o.customerName}</strong><div style="color:#666;margin-top:3px">📞 ${o.phone}</div>
-      <a href="tel:${o.phone}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 12px;color:#22c55e;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px">📲 اتصال بالزبون</div></div>
-    <div class="mb"><div class="ml">العنوان</div>${o.address}</div>
+    <div class="mb"><div class="ml">${T_bdc.roles.customer||'Client'}</div><strong>${o.customerName}</strong><div style="color:#666;margin-top:3px">📞 ${o.phone}</div></div>
+    <div class="mb"><div class="ml">${T_bdc.address||'Adresse'}</div>${o.address}</div>
   </div>
-  <table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr></thead><tbody>${rows}</tbody></table>
+  ${o.note?`<div class="gps-info">💬 ${o.note}</div>`:''}
+  <table><thead><tr><th>Produit</th><th style="text-align:center">Qté</th><th style="text-align:center">Prix</th><th style="text-align:center">Total</th></tr></thead><tbody>${rows}</tbody></table>
   <div class="tot">
-    <div class="tr"><span>المجموع الجزئي</span><span>${o.subtotal} دج</span></div>
-    <div class="tr"><span>رسوم التوصيل</span><span>${o.delivery} دج</span></div>
-    <div class="grand"><span>الإجمالي</span><span>${o.total} دج</span></div>
+    <div class="tr"><span>Sous-total</span><span>${o.subtotal} ${T_bdc.dz}</span></div>
+    <div class="tr"><span>Livraison</span><span>${o.delivery} ${T_bdc.dz}</span></div>
+    <div class="grand"><span>TOTAL</span><span>${o.total} ${T_bdc.dz}</span></div>
   </div>
-  ${o.note?`<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:12px;color:#92400e">💬 ${o.note}</div>`:''}
   <div class="sigs">
-    <div class="sig"><div class="sig-l">توقيع المسؤول</div><div class="sig-line"></div></div>
-    <div class="sig"><div class="sig-l">توقيع المُعبِّئ</div><div class="sig-line"></div></div>
-    <div class="sig"><div class="sig-l">توقيع السائق</div><div class="sig-line"></div></div>
+    <div class="sig"><div class="sig-l">Responsable</div><div class="sig-line"></div></div>
+    <div class="sig"><div class="sig-l">Préparateur</div><div class="sig-line"></div></div>
+    <div class="sig"><div class="sig-l">Livreur</div><div class="sig-line"></div></div>
   </div>
-  <div class="footer">MADJI PRO © 2026 — وثيقة رسمية</div>
+  <div class="footer">MADJI PRO © 2026 — Document officiel</div>
   </body></html>`)
-  w.document.close(); w.print()
+  win.document.close(); win.print()
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
+//  GPS
+// ════════════════════════════════════════════════
+function getOrderGPS() {
+  const s = document.getElementById('gps-order-status')
+  if(s){ s.innerHTML=`<span class="spinner-inline"></span>${t('gps_loading')}`; s.style.color='var(--accent)' }
+  if(!navigator.geolocation){
+    if(s){ s.textContent=t('gps_err2'); s.style.color='var(--danger)' }
+    return
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      orderLocation.lat = pos.coords.latitude
+      orderLocation.lng = pos.coords.longitude
+      renderPage()
+      showToast('📍 ' + t('gps_done'))
+    },
+    err => {
+      const msgs = {1:t('gps_err1'),2:t('gps_err2'),3:t('gps_err3')}
+      const s = document.getElementById('gps-order-status')
+      if(s){ s.textContent=msgs[err.code]||t('gps_err2'); s.style.color='var(--danger)' }
+    },
+    {enableHighAccuracy:true, timeout:15000, maximumAge:0}
+  )
+}
+
+function startDriverTracking() {
+  if(!navigator.geolocation) return
+  if(driverLocationInterval) clearInterval(driverLocationInterval)
+  const updatePos = () => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      db.from('users').update({
+        city: `GPS:${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`
+      }).eq('id', currentUser.id).then(()=>{})
+    }, ()=>{}, {enableHighAccuracy:true, timeout:10000})
+  }
+  updatePos()
+  driverLocationInterval = setInterval(updatePos, 30000)
+}
+
+// ════════════════════════════════════════════════
+//  MODAL
+// ════════════════════════════════════════════════
+function openModal(title, html) {
+  document.getElementById('modal-title-text').textContent = title
+  document.getElementById('modal-body').innerHTML = html
+  document.getElementById('modal').classList.remove('hidden')
+}
+function closeModal() { document.getElementById('modal').classList.add('hidden') }
+
+// ════════════════════════════════════════════════
 //  DASHBOARD
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderDashboard() {
   const delivered = allOrders.filter(o=>o.status==='delivered')
-  const revenue   = delivered.reduce((s,o)=>s+o.total,0)
-  const expenses  = allExpenses.reduce((s,e)=>s+e.amount,0)
-  const expired   = allProducts.filter(p=>daysUntil(p.expiry_date)<=0)
-  const expiring  = allProducts.filter(p=>daysUntil(p.expiry_date)>0&&daysUntil(p.expiry_date)<=60)
-  const lowStock  = allProducts.filter(p=>p.stock<p.min_stock)
-  const today     = new Date().toISOString().split('T')[0]
+  const revenue = delivered.reduce((s,o)=>s+o.total,0)
+  const expenses = allExpenses.reduce((s,e)=>s+e.amount,0)
+  const net = revenue - expenses
+  const today = new Date().toISOString().split('T')[0]
   const todayOrders = allOrders.filter(o=>o.date===today)
+  const expired = allProducts.filter(p=>daysUntil(p.expiry_date)<=0)
+  const expiring = allProducts.filter(p=>daysUntil(p.expiry_date)>0&&daysUntil(p.expiry_date)<=60)
+  const lowStock = allProducts.filter(p=>p.stock<p.min_stock)
 
   const alerts = [
-    ...expired.map(p=>`<div class="alert alert-danger">🚨 <span><b>${p.name}</b> — انتهت الصلاحية!</span></div>`),
-    ...expiring.map(p=>`<div class="alert alert-warn">⚠️ <span><b>${p.name}</b> — تنتهي خلال ${daysUntil(p.expiry_date)} يوم</span></div>`),
-    ...lowStock.map(p=>`<div class="alert alert-info">📦 <span><b>${p.name}</b> — مخزون منخفض: ${p.stock} قطعة</span></div>`),
+    ...expired.map(p=>`<div class="alert alert-danger">🚨 <span><b>${p.name}</b> — ${lang==='ar'?'انتهت الصلاحية!':lang==='fr'?'Expiré!':'Expired!'}</span></div>`),
+    ...expiring.map(p=>`<div class="alert alert-warn">⚠️ <span><b>${p.name}</b> — ${daysUntil(p.expiry_date)} ${lang==='ar'?'يوم':lang==='fr'?'jours':'days'}</span></div>`),
+    ...lowStock.map(p=>`<div class="alert alert-info">📦 <span><b>${p.name}</b> — ${t('low_stock')}: ${p.stock}</span></div>`),
   ].join('')
 
   const recentRows = allOrders.slice(0,5).map(o=>`
-    <tr><td style="color:var(--accent);font-weight:700;font-size:11px">${o.id}</td>
-    <td>${o.customerName}</td>
-    <td>${badge(STATUS[o.status]?.l||o.status, STATUS[o.status]?.c||'#888')}</td>
-    <td style="font-weight:800">${o.total} دج</td></tr>`).join('')
+    <tr>
+      <td style="color:var(--accent);font-weight:700;font-size:11px">${o.id}</td>
+      <td style="font-weight:600">${o.customerName}</td>
+      <td>${badge(tStatus(o.status), STATUS_COLORS[o.status]||'#888')}</td>
+      <td style="font-weight:800">${dz(o.total)}</td>
+    </tr>`).join('')
 
   return `
-    <div class="page-title">📊 لوحة التحكم</div>
+    <div class="page-title">${tTab('dashboard')}</div>
     ${alerts}
     <div class="kpi-grid">
-      ${kpi(revenue.toLocaleString()+' دج','إجمالي المبيعات','#38bdf8')}
-      ${kpi((revenue-expenses).toLocaleString()+' دج','الربح الصافي',revenue-expenses>=0?'#22c55e':'#f43f5e')}
-      ${kpi(todayOrders.length,'طلبات اليوم','#818cf8')}
-      ${kpi(allUsers.filter(u=>u.active).length,'المستخدمون النشطون','#f59e0b')}
+      ${kpi(dz(revenue), t('revenue'), 'var(--accent)')}
+      ${kpi(dz(net), t('net_profit'), net>=0?'var(--success)':'var(--danger)', net>=0?'✅':'⚠️')}
+      ${kpi(todayOrders.length, t('today_orders'), 'var(--accent2)')}
+      ${kpi(allUsers.filter(u=>u.active).length, t('active_users'), 'var(--warn)')}
     </div>
-    <div class="table-card">
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px">🛒 آخر الطلبات</div>
-      <table><thead><tr><th>الطلب</th><th>الزبون</th><th>الحالة</th><th>المبلغ</th></tr></thead>
-      <tbody>${recentRows}</tbody></table>
+    <div class="card">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px">🛒 ${lang==='ar'?'آخر الطلبات':lang==='fr'?'Dernières commandes':'Latest Orders'}</div>
+      <div style="overflow-x:auto"><table><thead><tr>
+        <th>${lang==='ar'?'رقم الطلب':'N° commande'}</th>
+        <th>${lang==='ar'?'الزبون':lang==='fr'?'Client':'Customer'}</th>
+        <th>${lang==='ar'?'الحالة':lang==='fr'?'Statut':'Status'}</th>
+        <th>${lang==='ar'?'المبلغ':lang==='fr'?'Montant':'Amount'}</th>
+      </tr></thead><tbody>${recentRows}</tbody></table></div>
     </div>`
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  USERS
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderUsers() {
-  const ROLES = {superadmin:'👑 Super Admin',orders_admin:'📋 مسؤول الطلبات',stock_admin:'🏭 مسؤول المخزن',driver:'🚗 سائق',customer:'👤 زبون'}
-  const ROLE_COLORS = {superadmin:'#f59e0b',orders_admin:'#38bdf8',stock_admin:'#a78bfa',driver:'#22c55e',customer:'#94a3b8'}
   const rows = allUsers.map(u=>`
     <tr>
       <td style="font-weight:700">${u.name}</td>
-      <td style="font-family:monospace;font-size:11px;color:rgba(232,238,255,0.5)">${u.username}</td>
-      <td>${badge(ROLES[u.role]||u.role, ROLE_COLORS[u.role]||'#888')}</td>
-      <td style="font-size:12px;color:rgba(232,238,255,0.5)">${u.city||u.zone||'—'}</td>
-      <td>${badge(u.active?'نشط':'معطل',u.active?'#22c55e':'#64748b')}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${u.username}</td>
+      <td>${badge(t('roles')[u.role]||u.role, u.role==='superadmin'?'#f59e0b':u.role==='driver'?'#22c55e':u.role==='customer'?'#94a3b8':'#38bdf8')}</td>
+      <td style="font-size:12px;color:var(--muted)">${u.city||u.zone||'—'}</td>
+      <td>${badge(u.active?(lang==='ar'?'نشط':lang==='fr'?'Actif':'Active'):(lang==='ar'?'معطل':lang==='fr'?'Inactif':'Inactive'), u.active?'#22c55e':'#64748b')}</td>
       <td>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">✏️</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')">${t('edit')}</button>
           <button class="btn btn-danger btn-sm" onclick="toggleUser('${u.id}',${!u.active})">${u.active?'⛔':'✅'}</button>
         </div>
       </td>
@@ -430,139 +888,233 @@ function renderUsers() {
 
   return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div class="page-title" style="margin:0">👥 المستخدمون</div>
-      <button class="btn btn-primary" onclick="addUser()">+ إضافة مستخدم</button>
+      <div class="page-title" style="margin:0">${tTab('users')}</div>
+      <button class="btn btn-primary btn-sm" onclick="addUser()">${t('add_user')}</button>
     </div>
-    <div class="table-card">
-      <table><thead><tr><th>الاسم</th><th>المستخدم</th><th>الدور</th><th>المدينة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-    </div>`
+    <div style="overflow-x:auto"><div class="card" style="padding:0">
+      <table><thead><tr>
+        <th style="padding:10px">${lang==='ar'?'الاسم':lang==='fr'?'Nom':'Name'}</th>
+        <th>${lang==='ar'?'المستخدم':'Username'}</th>
+        <th>${lang==='ar'?'الدور':lang==='fr'?'Rôle':'Role'}</th>
+        <th>${lang==='ar'?'المدينة':lang==='fr'?'Ville':'City'}</th>
+        <th>${lang==='ar'?'الحالة':lang==='fr'?'Statut':'Status'}</th>
+        <th>${lang==='ar'?'إجراءات':lang==='fr'?'Actions':'Actions'}</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div></div>`
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  PRODUCTS
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderProducts() {
   const rows = allProducts.map(p=>{
     const margin = p.sell_price>0?Math.round(((p.sell_price-p.cost_price)/p.sell_price)*100):0
     const days = daysUntil(p.expiry_date)
-    const ec = days<=0?'#f43f5e':days<=30?'#f43f5e':days<=60?'#f59e0b':'#22c55e'
+    const ec = days<=0?'var(--danger)':days<=30?'var(--danger)':days<=60?'var(--warn)':'var(--success)'
     return `<tr>
-      <td>${p.emoji} ${p.name} <span style="font-size:11px;color:rgba(232,238,255,0.4)">${p.volume}</span></td>
-      <td>${badge(p.category,'#38bdf8')}</td>
-      <td style="font-weight:800;color:var(--accent)">${p.sell_price} دج</td>
-      <td style="color:rgba(232,238,255,0.5)">${p.cost_price} دج</td>
-      <td style="font-weight:700;color:${margin>30?'#22c55e':'#f59e0b'}">${margin}%</td>
-      <td style="font-weight:700;color:${p.stock<p.min_stock?'#f43f5e':'#22c55e'}">${p.stock}</td>
-      <td style="font-size:11px;color:${ec}">${p.expiry_date}${days<=0?' ⛔':days<=60?` ⚠️${days}ي`:''}</td>
-      <td><div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="editProduct('${p.id}')">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">🗑️</button>
-      </div></td>
+      <td>${p.emoji} <strong>${p.name}</strong> <span style="font-size:11px;color:var(--muted)">${p.volume}</span></td>
+      <td>${badge(p.category,'var(--accent)')}</td>
+      <td style="font-weight:800;color:var(--accent)">${dz(p.sell_price)}</td>
+      <td style="color:var(--muted)">${dz(p.cost_price)}</td>
+      <td style="font-weight:700;color:${margin>30?'var(--success)':'var(--warn)'}">${margin}%</td>
+      <td style="font-weight:700;color:${p.stock<p.min_stock?'var(--danger)':'var(--success)'}">${p.stock}</td>
+      <td style="font-size:11px;color:${ec}">${p.expiry_date}${days<=0?' ⛔':days<=60?` ⚠️${days}j`:''}</td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-sm" onclick="editProduct('${p.id}')">${t('edit')}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">🗑️</button>
+        </div>
+      </td>
     </tr>`}).join('')
 
   return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div class="page-title" style="margin:0">📦 المنتجات والأسعار</div>
-      <button class="btn btn-primary" onclick="addProduct()">+ منتج جديد</button>
+      <div class="page-title" style="margin:0">${tTab('products')}</div>
+      <button class="btn btn-primary btn-sm" onclick="addProduct()">${t('add_product')}</button>
     </div>
-    <div class="table-card">
-      <table><thead><tr><th>المنتج</th><th>الفئة</th><th>سعر البيع</th><th>التكلفة</th><th>الهامش</th><th>المخزون</th><th>الصلاحية</th><th>إجراءات</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-    </div>`
+    <div style="overflow-x:auto"><div class="card" style="padding:0">
+      <table><thead><tr>
+        <th style="padding:10px">${lang==='ar'?'المنتج':lang==='fr'?'Produit':'Product'}</th>
+        <th>${lang==='ar'?'الفئة':lang==='fr'?'Catégorie':'Category'}</th>
+        <th>${t('sell_price')}</th>
+        <th>${t('cost_price')}</th>
+        <th>${t('margin')}</th>
+        <th>${t('stock_qty')}</th>
+        <th>${lang==='ar'?'الصلاحية':lang==='fr'?'Expiration':'Expiry'}</th>
+        <th>${lang==='ar'?'إجراءات':lang==='fr'?'Actions':'Actions'}</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div></div>`
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
+//  STOCK
+// ════════════════════════════════════════════════
+function renderStock() {
+  const cards = allProducts.map(p=>{
+    const pct = Math.min(100,(p.stock/(p.min_stock*5))*100)
+    const fc = p.stock<p.min_stock?'var(--danger)':p.stock<p.min_stock*2?'var(--warn)':'var(--success)'
+    const days = daysUntil(p.expiry_date)
+    const ec = days<=0?'var(--danger)':days<=60?'var(--warn)':'var(--success)'
+    return `
+    <div class="card" style="border-inline-start:3px solid ${fc}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:26px">${p.emoji}</span>
+          <div>
+            <div style="font-size:14px;font-weight:800">${p.name}</div>
+            <div style="font-size:11px;color:var(--muted)">${p.volume} — ${p.category}</div>
+          </div>
+        </div>
+        <div style="text-align:${lang==='ar'?'left':'right'}">
+          <div style="font-size:24px;font-weight:900;color:${fc}">${p.stock}</div>
+          <div style="font-size:10px;color:var(--muted)">${lang==='ar'?'من':lang==='fr'?'sur':'of'} ${p.min_stock*5}</div>
+        </div>
+      </div>
+      <div class="progress-wrap" style="margin-bottom:10px">
+        <div class="progress-fill" style="width:${pct}%;background:${fc}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+        <div style="color:var(--muted)">
+          ${lang==='ar'?'الحد الأدنى':lang==='fr'?'Min':'Min'}: <strong style="color:var(--text)">${p.min_stock}</strong>
+          &nbsp;|&nbsp;
+          <span style="color:${ec}">${days<=0?(lang==='ar'?'منتهية':lang==='fr'?'Expiré':'Expired'):`${days}j`}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="setStock('${p.id}','${p.name}',${p.stock})">${t('set_qty')}</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--success);border-color:rgba(34,197,94,0.3)" onclick="addStock('${p.id}','${p.name}')">${t('add_qty')}</button>
+        </div>
+      </div>
+    </div>`}).join('')
+
+  return `
+    <div class="page-title">${tTab('stock')}</div>
+    <div class="kpi-grid">
+      ${kpi(allProducts.reduce((s,p)=>s+p.stock,0).toLocaleString(), t('total_stock'), 'var(--accent)')}
+      ${kpi(allProducts.filter(p=>p.stock<p.min_stock).length, t('low_stock'), 'var(--warn)')}
+      ${kpi(allProducts.filter(p=>daysUntil(p.expiry_date)<=0).length, t('expired'), 'var(--danger)')}
+      ${kpi(allProducts.length, t('product_types'), 'var(--accent2)')}
+    </div>
+    ${cards}`
+}
+
+// ════════════════════════════════════════════════
 //  ORDERS (ADMIN)
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderOrders() {
   const rows = allOrders.map(o=>`
     <tr>
       <td style="color:var(--accent);font-weight:700;font-size:11px">${o.id}</td>
-      <td style="font-weight:700">${o.customerName}</td>
-      <td style="font-size:12px;color:rgba(232,238,255,0.5)">${o.city||''}</td>
-      <td style="font-weight:800">${o.total} دج</td>
-      <td>${badge(STATUS[o.status]?.l||o.status, STATUS[o.status]?.c||'#888')}</td>
-      <td style="font-size:12px;color:rgba(232,238,255,0.5)">${o.driverName||'—'}</td>
-      <td style="font-size:11px;color:rgba(232,238,255,0.4)">${o.date}</td>
+      <td style="font-weight:600">${o.customerName}</td>
+      <td style="font-size:12px;color:var(--muted)">${o.city||''}</td>
+      <td style="font-weight:800">${dz(o.total)}</td>
+      <td>${badge(tStatus(o.status), STATUS_COLORS[o.status]||'#888')}</td>
+      <td style="font-size:11px;color:var(--muted)">${o.driverName||'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${o.date}</td>
       <td><button class="btn btn-ghost btn-sm" onclick='printBDC(${JSON.stringify(o).replace(/'/g,"&#39;")})'>🖨️</button></td>
     </tr>`).join('')
 
   return `
-    <div class="page-title">🛒 جميع الطلبات</div>
-    <div class="table-card">
-      <table><thead><tr><th>رقم الطلب</th><th>الزبون</th><th>المدينة</th><th>المبلغ</th><th>الحالة</th><th>السائق</th><th>التاريخ</th><th>BDC</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-    </div>`
+    <div class="page-title">${tTab('orders')}</div>
+    <div style="overflow-x:auto"><div class="card" style="padding:0">
+      <table><thead><tr>
+        <th style="padding:10px">ID</th>
+        <th>${lang==='ar'?'الزبون':lang==='fr'?'Client':'Customer'}</th>
+        <th>${lang==='ar'?'المدينة':lang==='fr'?'Ville':'City'}</th>
+        <th>${lang==='ar'?'المبلغ':lang==='fr'?'Total':'Total'}</th>
+        <th>${lang==='ar'?'الحالة':lang==='fr'?'Statut':'Status'}</th>
+        <th>${lang==='ar'?'السائق':lang==='fr'?'Livreur':'Driver'}</th>
+        <th>${lang==='ar'?'التاريخ':lang==='fr'?'Date':'Date'}</th>
+        <th>BDC</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div></div>`
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  COSTS
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderCosts() {
   const delivered = allOrders.filter(o=>o.status==='delivered')
-  const revenue   = delivered.reduce((s,o)=>s+o.total,0)
-  const expenses  = allExpenses.reduce((s,e)=>s+e.amount,0)
-  const gross     = revenue - delivered.reduce((s,o)=>s+o.items.reduce((ss,i)=>{const p=allProducts.find(p=>p.id===i.productId);return ss+(p?p.cost_price*i.qty:0)},0),0)
-  const net       = gross - expenses
+  const revenue = delivered.reduce((s,o)=>s+o.total,0)
+  const costGoods = delivered.reduce((s,o)=>s+o.items.reduce((ss,i)=>{const p=allProducts.find(p=>p.id===i.productId);return ss+(p?p.cost_price*i.qty:0)},0),0)
+  const expenses = allExpenses.reduce((s,e)=>s+e.amount,0)
+  const gross = revenue - costGoods
+  const net = gross - expenses
 
   const rows = allExpenses.map(e=>`
     <tr>
       <td style="font-weight:700">${e.label}</td>
-      <td>${badge(e.type==='fixed'?'ثابتة':'متغيرة',e.type==='fixed'?'#818cf8':'#f59e0b')}</td>
-      <td style="font-weight:800;color:var(--danger)">${Number(e.amount).toLocaleString()} دج</td>
-      <td style="font-size:12px;color:rgba(232,238,255,0.5)">${e.expense_date||e.date}</td>
-      <td><div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="editExpense('${e.id}')">✏️</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteExpense('${e.id}')">🗑️</button>
-      </div></td>
+      <td>${badge(e.type==='fixed'?(lang==='ar'?'ثابتة':lang==='fr'?'Fixe':'Fixed'):(lang==='ar'?'متغيرة':lang==='fr'?'Variable':'Variable'), e.type==='fixed'?'#818cf8':'#f59e0b')}</td>
+      <td style="font-weight:800;color:var(--danger)">${dz(e.amount)}</td>
+      <td style="font-size:11px;color:var(--muted)">${e.expense_date||e.date}</td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-sm" onclick="editExpense('${e.id}')">${t('edit')}</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteExpense('${e.id}')">🗑️</button>
+        </div>
+      </td>
     </tr>`).join('')
 
   return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div class="page-title" style="margin:0">💰 التكاليف والأرباح</div>
-      <button class="btn btn-primary" onclick="addExpense()">+ إضافة تكلفة</button>
+      <div class="page-title" style="margin:0">${tTab('costs')}</div>
+      <button class="btn btn-primary btn-sm" onclick="addExpense()">${t('add_expense')}</button>
     </div>
     <div class="kpi-grid">
-      ${kpi(revenue.toLocaleString()+' دج','إجمالي المبيعات','#38bdf8')}
-      ${kpi(gross.toLocaleString()+' دج','الربح الإجمالي','#f59e0b',`هامش ${revenue>0?Math.round((gross/revenue)*100):0}%`)}
-      ${kpi(expenses.toLocaleString()+' دج','التكاليف التشغيلية','#f43f5e')}
-      ${kpi(net.toLocaleString()+' دج','💰 الربح الصافي',net>=0?'#22c55e':'#f43f5e',net>=0?'ربح ✅':'خسارة ⚠️')}
+      ${kpi(dz(revenue), t('revenue'), 'var(--accent)')}
+      ${kpi(dz(gross), t('gross_profit'), 'var(--warn)', revenue>0?Math.round((gross/revenue)*100)+'%':'')}
+      ${kpi(dz(expenses), t('op_costs'), 'var(--danger)')}
+      ${kpi(dz(net), t('net_profit'), net>=0?'var(--success)':'var(--danger)', net>=0?'✅':'⚠️')}
     </div>
-    <div class="table-card">
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 قائمة التكاليف</div>
-      <table><thead><tr><th>التكلفة</th><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-    </div>`
+    <div style="overflow-x:auto"><div class="card" style="padding:0">
+      <table><thead><tr>
+        <th style="padding:10px">${lang==='ar'?'التكلفة':lang==='fr'?'Charge':'Expense'}</th>
+        <th>${lang==='ar'?'النوع':lang==='fr'?'Type':'Type'}</th>
+        <th>${lang==='ar'?'المبلغ':lang==='fr'?'Montant':'Amount'}</th>
+        <th>${lang==='ar'?'التاريخ':lang==='fr'?'Date':'Date'}</th>
+        <th></th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div></div>`
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  ORDERS ADMIN
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderOrdersAdmin(status) {
   const orders = allOrders.filter(o=>o.status===status)
   const drivers = allUsers.filter(u=>u.role==='driver'&&u.active)
 
-  if(orders.length===0) return `<div class="spinner">✅ لا توجد طلبات في هذا القسم</div>`
+  if(orders.length===0) return `<div style="text-align:center;padding:60px;color:var(--muted);font-size:14px">✅ ${t('no_orders')}</div>`
 
   return orders.map(o=>{
-    const items = o.items.map(i=>`<span style="font-size:12px;padding:4px 10px;border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(232,238,255,0.5);margin:2px">${i.emoji} ${i.name} ×${i.qty}</span>`).join('')
-    const driverSel = status==='ready' ? `<select onchange="assignDriver('${o.id}',this.value)" style="background:#0d1829;border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:#e8eeff;font-size:12px;font-family:'Cairo',sans-serif;cursor:pointer"><option value="">🚗 إسناد سائق</option>${drivers.map(d=>`<option value="${d.id}">${d.name} — ${d.zone||''}</option>`).join('')}</select>` : ''
-    const readyBtn = status==='pending' ? `<button class="btn btn-primary" style="font-size:12px;padding:7px 14px" onclick="markReady('${o.id}')">✅ جاهز للشحن</button>` : ''
-    return `<div class="order-card" style="border-right-color:${STATUS[status]?.c||'#888'}">
+    const items = o.items.map(i=>`<span style="font-size:12px;padding:4px 10px;border-radius:8px;background:rgba(255,255,255,0.05);color:var(--muted)">${i.emoji} ${i.name} ×${i.qty}</span>`).join(' ')
+    const gpsLink = o.note && o.note.includes('GPS:') ? (() => {
+      const match = o.note.match(/GPS:([\d.]+),([\d.]+)/)
+      return match ? `<a href="https://maps.google.com/?q=${match[1]},${match[2]}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:4px">🗺️ ${t('gps_maps')}</a>` : ''
+    })() : ''
+
+    const driverSel = status==='ready' ? `
+      <select onchange="assignDriver('${o.id}',this.value)" style="background:#0d1829;border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;font-family:inherit;cursor:pointer">
+        <option value="">${t('assign_driver')}</option>
+        ${drivers.map(d=>`<option value="${d.id}">${d.name} — ${d.zone||d.city||''}</option>`).join('')}
+      </select>` : ''
+    const readyBtn = status==='pending' ? `<button class="btn btn-primary btn-sm" onclick="markReady('${o.id}')">${t('ready_ship')}</button>` : ''
+    const callBtn = `<a href="tel:${o.phone}" class="btn btn-ghost btn-sm" style="color:var(--success);border-color:rgba(34,197,94,0.3);text-decoration:none">${t('call_customer')}</a>`
+
+    return `<div class="order-card" style="border-inline-start-color:${STATUS_COLORS[status]}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div><div style="font-size:15px;font-weight:900">${o.customerName}</div><div style="font-size:11px;color:var(--accent);margin-top:2px;font-weight:700">${o.id}</div></div>
-        ${badge(STATUS[status]?.l||status,STATUS[status]?.c||'#888')}
+        ${badge(tStatus(status), STATUS_COLORS[status])}
       </div>
-      <div style="font-size:12px;color:rgba(232,238,255,0.5);margin-bottom:6px">📞 ${o.phone}</div>
-      <a href="tel:${o.phone}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 12px;color:#22c55e;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px">📲 اتصال بالزبون</div>
-      <div style="font-size:12px;color:rgba(232,238,255,0.5);margin-bottom:10px">📍 ${o.address}</div>
-      ${o.note?`<div style="font-size:12px;color:var(--warn);background:rgba(245,158,11,0.08);border-radius:8px;padding:6px 10px;margin-bottom:10px">💬 ${o.note}</div>`:''}
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">📞 ${o.phone}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:${gpsLink?'4px':'10px'}">📍 ${o.address}</div>
+      ${gpsLink?`<div style="margin-bottom:10px">${gpsLink}</div>`:''}
+      ${o.note&&!o.note.includes('GPS:')?`<div style="font-size:12px;color:var(--warn);background:rgba(245,158,11,0.08);border-radius:8px;padding:6px 10px;margin-bottom:10px">💬 ${o.note.replace(/\s*\|.*$/,'')}</div>`:''}
       <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">${items}</div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:18px;font-weight:900;color:var(--accent)">${o.total} دج</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn btn-ghost" style="font-size:12px;padding:7px 12px" onclick='printBDC(${JSON.stringify(o).replace(/'/g,"&#39;")})'>🖨️ BDC</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="font-size:18px;font-weight:900;color:var(--accent)">${dz(o.total)}</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${callBtn}
+          <button class="btn btn-ghost btn-sm" onclick='printBDC(${JSON.stringify(o).replace(/'/g,"&#39;")})'>${t('print_bdc')}</button>
           ${readyBtn}${driverSel}
         </div>
       </div>
@@ -570,102 +1122,82 @@ function renderOrdersAdmin(status) {
   }).join('')
 }
 
-// ═══════════════════════════════════════
-//  STOCK
-// ═══════════════════════════════════════
-function renderStock() {
-  const total = allProducts.reduce((s,p)=>s+p.stock,0)
-  const low   = allProducts.filter(p=>p.stock<p.min_stock)
-  const exp   = allProducts.filter(p=>daysUntil(p.expiry_date)<=0)
-
-  const cards = allProducts.map(p=>{
-    const pct = Math.min(100,(p.stock/(p.min_stock*5))*100)
-    const fc  = p.stock<p.min_stock?'#f43f5e':p.stock<p.min_stock*2?'#f59e0b':'#22c55e'
-    const days = daysUntil(p.expiry_date)
-    const ec  = days<=0?'#f43f5e':days<=60?'#f59e0b':'#22c55e'
-    const status = p.stock<p.min_stock?'منخفض ⚠️':p.stock<p.min_stock*2?'متوسط':'جيد ✅'
-    return `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;border-right:3px solid ${fc}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:28px">${p.emoji}</span>
-          <div>
-            <div style="font-size:15px;font-weight:800">${p.name}</div>
-            <div style="font-size:11px;color:rgba(232,238,255,0.45)">${p.volume} — ${p.category}</div>
-          </div>
-        </div>
-        <div style="text-align:left">
-          <div style="font-size:26px;font-weight:900;color:${fc}">${p.stock}</div>
-          <div style="font-size:10px;color:rgba(232,238,255,0.45)">من أصل ${p.min_stock*5}</div>
-        </div>
-      </div>
-      <div class="progress-wrap" style="margin-bottom:10px">
-        <div class="progress-fill" style="width:${pct}%;background:${fc}"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
-        <div style="display:flex;gap:12px">
-          <span style="color:rgba(232,238,255,0.45)">الحد الأدنى: <strong style="color:#e8eeff">${p.min_stock}</strong></span>
-          <span style="color:${ec}">صلاحية: ${days<=0?'منتهية ⛔':days+'ي'}</span>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="setStock('${p.id}','${p.name}',${p.stock})">✏️ تعديل</button>
-          <button class="btn btn-ghost btn-sm" style="color:var(--success);border-color:rgba(34,197,94,0.3)" onclick="addStock('${p.id}','${p.name}')">+ إضافة</button>
-        </div>
-      </div>
-    </div>`}).join('')
-
-  return `
-    <div class="page-title">🏭 إدارة المخزن</div>
-    <div class="kpi-grid">
-      ${kpi(total.toLocaleString(),'إجمالي المخزون','#38bdf8')}
-      ${kpi(low.length,'مخزون منخفض','#f59e0b')}
-      ${kpi(exp.length,'منتهية الصلاحية','#f43f5e')}
-      ${kpi(allProducts.length,'أنواع المنتجات','#818cf8')}
-    </div>
-    ${cards}`
-}
-
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  DRIVER
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderDriverOrders(done) {
   const orders = allOrders.filter(o=>o.driverId===currentUser.id&&(done?o.status==='delivered':o.status==='in_transit'))
-  if(orders.length===0) return `<div class="spinner">${done?'لا توجد طلبات مُسلَّمة بعد':'لا توجد طلبات مُسندة إليك'}</div>`
-  return orders.map(o=>`
-    <div class="order-card" style="border-right-color:${done?'#22c55e':'#818cf8'}">
+  if(orders.length===0) return `<div style="text-align:center;padding:60px;color:var(--muted);font-size:14px">${t('no_orders')}</div>`
+
+  return orders.map(o=>{
+    const gpsLink = o.note && o.note.includes('GPS:') ? (() => {
+      const match = o.note.match(/GPS:([\d.]+),([\d.]+)/)
+      return match ? `<a href="https://maps.google.com/?q=${match[1]},${match[2]}" target="_blank" style="display:flex;align-items:center;gap:6px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:10px;padding:8px 14px;color:var(--accent);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px">🗺️ ${t('gps_maps')} — ${match[1].substring(0,7)}°N, ${match[2].substring(0,7)}°E</a>` : ''
+    })() : ''
+
+    return `<div class="order-card" style="border-inline-start-color:${done?'var(--success)':'#818cf8'}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div><div style="font-size:15px;font-weight:900">${o.customerName}</div><div style="font-size:11px;color:var(--accent);margin-top:2px">${o.id}</div></div>
-        ${badge(STATUS[o.status]?.l||o.status,STATUS[o.status]?.c||'#888')}
+        ${badge(tStatus(o.status), STATUS_COLORS[o.status])}
       </div>
-      <div style="font-size:13px;color:rgba(232,238,255,0.5);margin-bottom:4px">📞 ${o.phone}</div>
-      <a href="tel:${o.phone}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 12px;color:#22c55e;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px">📲 اتصال بالزبون</div>
-      <div style="font-size:13px;color:rgba(232,238,255,0.5);margin-bottom:10px">📍 ${o.address}</div>
-      ${o.note?`<div style="font-size:12px;color:var(--warn);background:rgba(245,158,11,0.08);border-radius:8px;padding:6px 10px;margin-bottom:10px">💬 ${o.note}</div>`:''}
-      <div style="margin-bottom:12px">${o.items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${i.emoji} ${i.name} ×${i.qty}</span><span style="color:var(--accent);font-weight:700">${i.price*i.qty} دج</span></div>`).join('')}</div>
+      <a href="tel:${o.phone}" style="display:flex;align-items:center;gap:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:8px 14px;color:var(--success);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:8px;width:fit-content">${t('call_customer')} — ${o.phone}</a>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">📍 ${o.address}</div>
+      ${gpsLink}
+      ${o.note&&!o.note.includes('GPS:')?`<div style="font-size:12px;color:var(--warn);background:rgba(245,158,11,0.08);border-radius:8px;padding:6px 10px;margin-bottom:10px">💬 ${o.note.replace(/\s*\|.*$/,'')}</div>`:''}
+      <div style="margin-bottom:12px">${o.items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${i.emoji} ${i.name} ×${i.qty}</span><span style="color:var(--accent);font-weight:700">${dz(i.price*i.qty)}</span></div>`).join('')}</div>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:18px;font-weight:900;color:var(--accent)">${o.total} دج</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-ghost" style="padding:8px 14px" onclick='printBDC(${JSON.stringify(o).replace(/'/g,"&#39;")})'>🧾 فاتورة</button>
-          ${!done?`<button class="btn btn-success" style="padding:8px 16px" onclick="deliverOrder('${o.id}')">✅ تأكيد التسليم</button>`:''}
+        <div style="font-size:18px;font-weight:900;color:var(--accent)">${dz(o.total)}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick='printBDC(${JSON.stringify(o).replace(/'/g,"&#39;")})'>${t('print_bdc')}</button>
+          ${!done?`<button class="btn btn-success" onclick="deliverOrder('${o.id}')">${t('confirm_delivery')}</button>`:''}
         </div>
       </div>
-    </div>`).join('')
+    </div>`
+  }).join('')
 }
 
-// ═══════════════════════════════════════
-//  CUSTOMER SHOP
-// ═══════════════════════════════════════
-// ═══ الولايات والبلديات ═══
-const WILAYAS = {'01-أدرار':['أدرار','رقان','تيميمون','برات','أولف','بودة','زاوية كنتة','تسابيت','أقبلي','فنوغيل'],'02-الشلف':['الشلف','تنس','بنايرية','الكريمية','بريرة','بوزغاية','حرشون','الهرانفة','وادي فضة'],'03-الأغواط':['الأغواط','آفلو','حاسي الرمل','قصر الهيران','سيدي مخلوف','بريدة','تاجموت','عين ماضي'],'04-أم البواقي':['أم البواقي','عين البيضاء','عين فكرون','العامري','مسكيانة','عين مليلة','سوق نعمان'],'05-باتنة':['باتنة','عين توتة','مروانة','أريس','تكوت','بريكة','قصبة','نقاوس','فسديس'],'06-بجاية':['بجاية','أقبو','خراطة','سيدي عيش','أميزور','فنايا إيلماتن','الكروب','سوق الإثنين'],'07-بسكرة':['بسكرة','طولقة','سيدي عقبة','أورلال','أوماش','القنطرة','زريبة الوادي','شتمة'],'08-بشار':['بشار','عين الصفراء','أبادلة','بني ونيف','تبلبالة','كرزاز','القنادسة'],'09-البليدة':['البليدة','بوفاريك','الأربعاء','بني تامو','أولاد يعيش','موزاية','شريعة'],'10-البويرة':['البويرة','سور الغزلان','أقبيل','لخضارية','الحجرة','عين بسام','برج أوخريص'],'11-تمنراست':['تمنراست','إن قزام','إن صالح','إن گار','إدلس'],'12-تبسة':['تبسة','الشريعة','بئر العاتر','عين زروق','الونزة','مرسط','النقرين','فركان'],'13-تلمسان':['تلمسان','مغنية','الغزوات','رمشي','صبرة','سبدو','بني سنوس','العريشة'],'14-تيارت':['تيارت','فرندة','مشرع الصفا','رحوية','الأغلال','قصر الشلالة','دحموني'],'15-تيزي وزو':['تيزي وزو','ذراع الميزان','عزازقة','بني دوالة','أيت محمود','بوجيلوف','واضية','مكيرة'],'16-الجزائر':['الجزائر الوسطى','باب الوادي','باب الزوار','بن عكنون','الحراش','برج البحري','الرويبة','الدار البيضاء','بئر مراد رايس','بئر خادم','حسين داي','القبة','المحمدية','الشراقة','درارية'],'17-الجلفة':['الجلفة','مسعد','عين وسارة','بيرين','سيدي لعجال','حاسي بحبح','تعظيمت','دار الشيوخ'],'18-جيجل':['جيجل','الميلية','الطاهير','العوانة','شقفة','زيامة منصورية','غبالة'],'19-سطيف':['سطيف','العلمة','برج بوعريريج','عين أزال','بئر العرش','قجال','عين ولمان','مزلوق'],'20-سعيدة':['سعيدة','عين الحجر','يوب','سيدي بوبكر','تيرار','أولاد إبراهيم'],'21-سكيكدة':['سكيكدة','عزابة','القل','الحروش','فلفلة','زيغود يوسف'],'22-سيدي بلعباس':['سيدي بلعباس','تلاغ','مرحوم','سيدي إبراهيم','عين تيندامين','أولاد خالد'],'23-عنابة':['عنابة','البرجة','سيدي عمار','حجار','الشريعة'],'24-قالمة':['قالمة','القل','عين مخلوف','بوشقوف','الرقاية','بوحمدان'],'25-قسنطينة':['قسنطينة','الخروب','عين عبيد','حامة بوزيان','ديدوش مراد'],'26-المدية':['المدية','بوعيش','قصر البخاري','العزيزية','شلالة العذاورة','بني سليمان'],'27-مستغانم':['مستغانم','عين تادلس','المشرية','فروحة','سيدي عيسى','خضرة'],'28-مسيلة':['مسيلة','بوسعادة','سيدي عيسى','عين الخضراء','برهوم','سلوم'],'29-معسكر':['معسكر','غريس','تيغنيف','المحمدية','سيق','بوهني'],'30-ورقلة':['ورقلة','النقوسة','تقرت','حاسي مسعود','سيدي قلعون','المقارين'],'31-وهران':['وهران','عين الترك','مرسى الكبير','الأندلس','بطيوة','بئر الجير','سيدي الشحمي','القطنة'],'32-البيض':['البيض','بوقطب','الأبيض سيدي الشيخ','الشقيق','المحبس','بريزينة'],'33-إليزي':['إليزي','دبداب','برج عمر إدريس','إن أمناس'],'34-برج بوعريريج':['برج بوعريريج','رأس الوادي','العش','الأنصر','تقلعت','منصورة'],'35-بومرداس':['بومرداس','بودواو','دلس','ثنية الحد','إسطبول','خميس الخشنة','الناصرية'],'36-الطارف':['الطارف','القل','ابن زياد','الذرعان','عصفور','زريزر'],'37-تيندوف':['تيندوف','أم العسل'],'38-تيسمسيلت':['تيسمسيلت','خميستي','العيون','الأرباء','برج بونعامة'],'39-الوادي':['الوادي','الرقيبة','جامعة','حاسي خليفة','الدبيلة','كوينين'],'40-خنشلة':['خنشلة','بغاي','شلية','أنسيغة','بابار'],'41-سوق أهراس':['سوق أهراس','صدوق','مداوروش','سخنة','مشروحة'],'42-تيبازة':['تيبازة','الشرفة','بواقي','أحمر العين','خميستي','سيدي عمر'],'43-ميلة':['ميلة','فرجيوة','شلغوم العيد','أحمد راشدي','الطاية','وادي عتيبة'],'44-عين الدفلى':['عين الدفلى','الخميس','العطاف','عين الصلاح','مصدق','حمام ريغة'],'45-النعامة':['النعامة','مشرية','عسلة','صفيصيفة','تيوت'],'46-عين تموشنت':['عين تموشنت','بني صاف','سيدي بن عدة','أولاد كيحل'],'47-غرداية':['غرداية','بريان','متليلي الشعانبة','القرارة','بنورة','زلفانة'],'48-غليزان':['غليزان','رليزان','الجمعة','أولاد يعيش','سيدي خطاب','عمي موسى']}
+function renderDriverStats() {
+  const myDelivered = allOrders.filter(o=>o.driverId===currentUser.id&&o.status==='delivered')
+  const myInTransit = allOrders.filter(o=>o.driverId===currentUser.id&&o.status==='in_transit')
+  const totalEarnings = myDelivered.reduce((s,o)=>s+o.delivery,0)
 
-let shopCat = 'الكل'
-let orderLocation = {lat:null, lng:null, wilaya:'', commune:'', address:''}
+  return `
+    <div class="page-title">${tTab('driver_stats')}</div>
+    <div style="background:linear-gradient(135deg,rgba(56,189,248,0.1),rgba(129,140,248,0.06));border:1px solid rgba(56,189,248,0.2);border-radius:20px;padding:24px;text-align:center;margin-bottom:16px">
+      <div style="font-size:48px;margin-bottom:8px">🚗</div>
+      <div style="font-size:20px;font-weight:900">${currentUser.name}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">${t('roles').driver} — MADJI PRO</div>
+      <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:10px">
+        <span style="font-size:18px">⭐⭐⭐⭐☆</span>
+        <span style="font-size:14px;font-weight:700;color:var(--warn)">4.8</span>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      ${kpi(myDelivered.length, t('deliveries_today'), 'var(--success)')}
+      ${kpi(myInTransit.length, lang==='ar'?'قيد التوصيل':lang==='fr'?'En cours':'In Progress', '#818cf8')}
+      ${kpi(dz(totalEarnings), t('earnings'), 'var(--warn)')}
+      ${kpi(allOrders.filter(o=>o.driverId===currentUser.id).length, lang==='ar'?'إجمالي الطلبات':'Total', 'var(--accent)')}
+    </div>
+    ${myDelivered.length>0?`<div class="card">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px">${t('last_deliveries')}</div>
+      ${myDelivered.slice(0,5).map(o=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><div><div style="font-size:13px;font-weight:700">${o.customerName}</div><div style="font-size:11px;color:var(--muted)">${o.date}</div></div><div style="font-weight:900;color:var(--success)">${dz(o.total)}</div></div>`).join('')}
+    </div>`:''}`
+}
+
+// ════════════════════════════════════════════════
+//  CUSTOMER SHOP
+// ════════════════════════════════════════════════
+let shopCat = 'all'
 
 function renderShop() {
   const hour = new Date().getHours()
-  const greeting = hour<12?'صباح الخير ☀️':hour<18?'مساء الخير 🌤️':'مساء النور 🌙'
-  const cats = ['الكل','غازية','غير غازية','ماء']
-  const filtered = shopCat==='الكل'?allProducts:allProducts.filter(p=>p.category===shopCat)
+  const greeting = hour<12?t('greeting_morning'):hour<18?t('greeting_afternoon'):t('greeting_evening')
+  const cats = ['all','gazeous','nongaz','water']
+  const catLabels = cats.map(c=>t('cats')[c]||c)
+  const filtered = shopCat==='all'?allProducts:allProducts.filter(p=>{
+    const map = {gazeous:'غازية',nongaz:'غير غازية',water:'ماء'}
+    return p.category === map[shopCat]
+  })
   const cartItems = Object.entries(cart).map(([id,qty])=>({...allProducts.find(p=>p.id===id),qty}))
   const subtotal = cartItems.reduce((s,i)=>s+(i.sell_price||0)*i.qty,0)
   const cartCount = Object.values(cart).reduce((a,b)=>a+b,0)
@@ -675,151 +1207,336 @@ function renderShop() {
   const communes = orderLocation.wilaya ? (WILAYAS[orderLocation.wilaya]||[]) : []
   const communeOptions = communes.map(c=>`<option value="${c}" ${orderLocation.commune===c?'selected':''}>${c}</option>`).join('')
 
-  const catBtns = cats.map(c=>`<button class="cat-btn ${shopCat===c?'active':''}" onclick="setShopCat('${c}')">${c}</button>`).join('')
+  const catBtns = cats.map((c,i)=>`<button class="cat-btn ${shopCat===c?'active':''}" onclick="setShopCat('${c}')">${catLabels[i]}</button>`).join('')
+
   const prods = filtered.map(p=>{
     const qty=cart[p.id]||0
-    const qtyCtrl=qty===0?`<button class="add-btn" onclick="addCart('${p.id}')">+</button>`:`<div class="qty-row"><button class="qty-btn" onclick="removeCart('${p.id}')">−</button><span style="font-size:14px;font-weight:800;min-width:16px;text-align:center">${qty}</span><button class="qty-btn" onclick="addCart('${p.id}')">+</button></div>`
-    return `<div class="prod-card"><div class="prod-top"><div style="font-size:36px">${p.emoji}</div><div style="font-size:14px;font-weight:800;margin-top:4px">${p.name}</div><div style="font-size:11px;color:rgba(232,238,255,0.45)">${p.volume}</div></div><div class="prod-bot"><span style="font-size:16px;font-weight:900;color:var(--accent)">${p.sell_price} <small style="font-size:10px;font-weight:500">دج</small></span>${qtyCtrl}</div></div>`
+    const qtyCtrl=qty===0
+      ?`<button class="add-btn" onclick="addCart('${p.id}')">+</button>`
+      :`<div class="qty-row"><button class="qty-btn" onclick="removeCart('${p.id}')">−</button><span style="font-size:14px;font-weight:800;min-width:16px;text-align:center">${qty}</span><button class="qty-btn" onclick="addCart('${p.id}')">+</button></div>`
+    return `<div class="prod-card"><div class="prod-top"><div style="font-size:34px">${p.emoji}</div><div style="font-size:13px;font-weight:800;margin-top:4px">${p.name}</div><div style="font-size:11px;color:var(--muted)">${p.volume}</div></div><div class="prod-bot"><span style="font-size:15px;font-weight:900;color:var(--accent)">${dz(p.sell_price)}</span>${qtyCtrl}</div></div>`
   }).join('')
 
-  const locSection = `<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px">
-    <div style="font-size:14px;font-weight:800;margin-bottom:12px">📍 موقع التوصيل</div>
-    <div style="background:${hasLoc?'rgba(34,197,94,0.08)':'rgba(56,189,248,0.06)'};border:1px solid ${hasLoc?'rgba(34,197,94,0.3)':'rgba(56,189,248,0.2)'};border-radius:12px;padding:14px;margin-bottom:12px">
-      ${hasLoc?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:22px">✅</span><div><div style="font-size:13px;font-weight:800;color:var(--success)">تم تحديد موقعك بدقة!</div><div style="font-size:11px;color:rgba(232,238,255,0.5)">${orderLocation.lat.toFixed(5)}°N، ${orderLocation.lng.toFixed(5)}°E</div></div></div><a href="https://maps.google.com/?q=${orderLocation.lat},${orderLocation.lng}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;display:block;margin-bottom:8px">🗺️ عرض على Google Maps</a>`:'<div style="font-size:13px;color:rgba(232,238,255,0.6);margin-bottom:10px">📡 اضغط لتحديد موقعك — يساعد السائق للوصول بدقة</div>'}
-      <button onclick="getOrderGPS()" style="width:100%;padding:11px;border-radius:10px;background:${hasLoc?'rgba(255,255,255,0.06)':'linear-gradient(90deg,var(--accent),var(--accent2))'};border:${hasLoc?'1px solid var(--border)':'none'};color:${hasLoc?'#e8eeff':'#070d1a'};font-size:14px;font-weight:800;cursor:pointer;font-family:'Cairo',sans-serif">
-        ${hasLoc?'🔄 تحديث الموقع':'📍 تحديد موقعي الآن بـ GPS'}
+  const locSection = `
+  <div class="card" style="margin-bottom:14px">
+    <div style="font-size:14px;font-weight:800;margin-bottom:12px">📍 ${t('wilaya').replace('🏙️ ','')}</div>
+    <div class="${hasLoc?'gps-box gps-box-done':'gps-box gps-box-idle'}" style="margin-bottom:12px">
+      ${hasLoc?`
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:22px">✅</span>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--success)">${t('gps_done')}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${orderLocation.lat.toFixed(5)}°N, ${orderLocation.lng.toFixed(5)}°E</div>
+          </div>
+        </div>
+        <a href="https://maps.google.com/?q=${orderLocation.lat},${orderLocation.lng}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;display:block;margin-bottom:8px">${t('gps_maps')}</a>`
+      :`<div style="font-size:13px;color:var(--muted);margin-bottom:10px">${t('gps_desc')}</div>`}
+      <button onclick="getOrderGPS()" class="btn ${hasLoc?'btn-ghost':'btn-primary'} btn-full" style="font-size:13px">
+        ${hasLoc?t('gps_update'):t('gps_btn')}
       </button>
-      <div id="gps-order-status" style="font-size:12px;color:rgba(232,238,255,0.5);text-align:center;margin-top:6px;min-height:16px"></div>
+      <div id="gps-order-status" style="font-size:12px;color:var(--muted);text-align:center;margin-top:6px;min-height:16px"></div>
     </div>
-    <div class="field-label">🏙️ الولاية</div>
-    <select class="sel" id="order-wilaya" onchange="onWilayaChange(this.value)"><option value="">اختر الولاية</option>${wilayaOptions}</select>
-    ${orderLocation.wilaya?`<div class="field-label">🏘️ البلدية / الدائرة</div><select class="sel" id="order-commune" onchange="orderLocation.commune=this.value"><option value="">اختر البلدية</option>${communeOptions}</select>`:''}
-    <div class="field-label">🏠 العنوان التفصيلي</div>
-    <input class="inp" id="order-address" value="${orderLocation.address}" placeholder="الحي، الشارع، رقم المحل أو المنزل">
+    <div class="field-label">${t('wilaya')}</div>
+    <select class="sel" id="order-wilaya" onchange="onWilayaChange(this.value)">
+      <option value="">${t('select_wilaya')}</option>
+      ${wilayaOptions}
+    </select>
+    ${orderLocation.wilaya?`
+    <div class="field-label">${t('commune')}</div>
+    <select class="sel" id="order-commune" onchange="orderLocation.commune=this.value">
+      <option value="">${t('select_commune')}</option>
+      ${communeOptions}
+    </select>`:''}
+    <div class="field-label">${t('address')}</div>
+    <input class="inp" id="order-address" value="${orderLocation.address}" placeholder="${lang==='ar'?'الحي، الشارع، رقم المحل':lang==='fr'?'Quartier, rue, numéro':'Street, district, number'}">
   </div>`
 
-  const cartSection = cartCount>0?`
-    <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:16px;padding:16px;margin-bottom:14px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px">🛒 ملخص الطلب</div>
-      ${cartItems.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${i.emoji} ${i.name} ×${i.qty}</span><span style="font-weight:700">${(i.sell_price||0)*i.qty} دج</span></div>`).join('')}
-      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;color:rgba(232,238,255,0.5)"><span>🚚 رسوم التوصيل</span><span>50 دج</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:900;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)"><span>الإجمالي</span><span style="color:var(--accent)">${subtotal+50} دج</span></div>
+  const cartSection = cartCount>0 ? `
+    <div class="card" style="background:rgba(56,189,248,0.06);border-color:rgba(56,189,248,0.2);margin-bottom:14px">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px">${t('order_summary')}</div>
+      ${cartItems.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${i.emoji} ${i.name} ×${i.qty}</span><span style="font-weight:700">${dz((i.sell_price||0)*i.qty)}</span></div>`).join('')}
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;color:var(--muted)"><span>${t('delivery_fee')}</span><span>50 ${t('dz')}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:900;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)"><span>${t('total')}</span><span style="color:var(--accent)">${dz(subtotal+50)}</span></div>
     </div>
-    <div style="margin-bottom:14px">
-      <div class="field-label">📞 رقم الهاتف</div>
-      <input class="inp" id="order-phone" value="${currentUser.phone||''}" placeholder="0555 123 456">
-      <div class="field-label">💬 ملاحظة للسائق</div>
-      <input class="inp" id="order-note" placeholder="مثال: المحل في الطابق الأرضي">
+    <div style="margin-bottom:16px">
+      <div class="field-label">${t('phone')}</div>
+      <input class="inp" id="order-phone" value="${currentUser.phone||''}" placeholder="0555 123 456" style="margin-bottom:10px">
+      <div class="field-label">${t('note')}</div>
+      <input class="inp" id="order-note" placeholder="${lang==='ar'?'مثال: الطابق الثاني':lang==='fr'?'Ex: 2ème étage':'Ex: 2nd floor'}">
     </div>
-    <button class="btn-primary" onclick="placeOrder()" style="width:100%;padding:15px;font-size:16px;border-radius:14px">✅ تأكيد الطلب — ${subtotal+50} دج</button>`:''
+    <button class="btn btn-primary btn-full" onclick="placeOrder()" style="font-size:15px">
+      ${t('confirm_order')} — ${dz(subtotal+50)}
+    </button>` : ''
 
-  return `<div style="font-size:15px;font-weight:700;color:rgba(232,238,255,0.6);margin-bottom:14px">${greeting}، ${currentUser.name.split(' ')[0]} 👋</div>${locSection}<div class="cat-row">${catBtns}</div><div class="prod-grid">${prods}</div>${cartSection}`
+  return `
+    <div style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:14px">${greeting}, ${currentUser.name.split(' ')[0]} 👋</div>
+    ${locSection}
+    <div class="cat-row">${catBtns}</div>
+    <div class="prod-grid">${prods}</div>
+    ${cartSection}`
 }
 
-function onWilayaChange(val){orderLocation.wilaya=val;orderLocation.commune='';renderPage();setTimeout(()=>{const s=document.getElementById('order-wilaya');if(s)s.value=val},50)}
-function getOrderGPS(){const s=document.getElementById('gps-order-status');if(s){s.textContent='⏳ جاري تحديد موقعك...';s.style.color='var(--accent)'}if(!navigator.geolocation){if(s){s.textContent='⚠️ المتصفح لا يدعم GPS';s.style.color='var(--danger)'}return}navigator.geolocation.getCurrentPosition(pos=>{orderLocation.lat=pos.coords.latitude;orderLocation.lng=pos.coords.longitude;renderPage()},err=>{const m={1:'⚠️ يرجى السماح بالوصول للموقع من إعدادات المتصفح',2:'⚠️ تأكد من تفعيل GPS',3:'⚠️ انتهت المهلة، حاول مجدداً'};const s=document.getElementById('gps-order-status');if(s){s.textContent=m[err.code]||'⚠️ خطأ في GPS';s.style.color='var(--danger)'}},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
 function setShopCat(c) { shopCat=c; renderPage() }
-function addCart(id)    { cart[id]=(cart[id]||0)+1; renderPage() }
+function addCart(id) { cart[id]=(cart[id]||0)+1; renderPage() }
 function removeCart(id) { if(cart[id]>1)cart[id]--;else delete cart[id]; renderPage() }
+function onWilayaChange(val) {
+  orderLocation.wilaya=val; orderLocation.commune=''; renderPage()
+  setTimeout(()=>{ const s=document.getElementById('order-wilaya'); if(s)s.value=val },50)
+}
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
+//  CUSTOMER PROFILE
+// ════════════════════════════════════════════════
+function renderProfile() {
+  const p = shopProfile
+  const hasLoc = p.lat && p.lng
+  const wilayas = Object.keys(WILAYAS)
+  const communes = p.wilaya ? (WILAYAS[p.wilaya]||[]) : []
+  const wilayaOptions = wilayas.map(w=>`<option value="${w}" ${p.wilaya===w?'selected':''}>${w}</option>`).join('')
+  const communeOptions = communes.map(c=>`<option value="${c}" ${p.commune===c?'selected':''}>${c}</option>`).join('')
+  const activityTypes = lang==='ar'
+    ? ['تجزئة','جملة','مطعم / مقهى','فندق','سوبرماركت','مؤسسة تعليمية','مستشفى / عيادة','أخرى']
+    : lang==='fr'
+    ? ['Détail','Gros','Restaurant / Café','Hôtel','Supermarché','Établissement scolaire','Hôpital / Clinique','Autre']
+    : ['Retail','Wholesale','Restaurant / Café','Hotel','Supermarket','School','Hospital / Clinic','Other']
+
+  return `
+    <div class="page-title">${tTab('profile')}</div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div id="shop-photo-preview" style="width:110px;height:110px;border-radius:20px;background:rgba(255,255,255,0.06);border:2px dashed rgba(56,189,248,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 10px;overflow:hidden;cursor:pointer" onclick="document.getElementById('shop-photo-input').click()">
+        ${p.photoUrl?`<img src="${p.photoUrl}" style="width:100%;height:100%;object-fit:cover">`:`<div style="font-size:32px">🏪</div>`}
+      </div>
+      <input type="file" id="shop-photo-input" accept="image/*" style="display:none" onchange="handleShopPhoto(this)">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('shop-photo-input').click()">
+        ${p.photoUrl?t('change_photo'):t('add_photo')}
+      </button>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:800;color:var(--accent);margin-bottom:12px">📋 ${lang==='ar'?'المعلومات الأساسية':lang==='fr'?'Informations générales':'General Info'}</div>
+      <div class="field-label">${t('shop_name')}</div>
+      <input class="inp" id="p-shopName" value="${p.shopName}" placeholder="${lang==='ar'?'محل الوفاء للمشروبات':lang==='fr'?'Épicerie Al Wafa':'Al Wafa Beverage Shop'}" style="margin-bottom:0">
+      <div class="field-label">${t('activity_type')}</div>
+      <select class="sel" id="p-activityType">
+        <option value="">${lang==='ar'?'اختر نوع النشاط':lang==='fr'?"Type d'activité":'Activity Type'}</option>
+        ${activityTypes.map(a=>`<option value="${a}" ${p.activityType===a?'selected':''}>${a}</option>`).join('')}
+      </select>
+      <div class="field-label">${t('start_date')}</div>
+      <input class="inp" id="p-startDate" type="date" value="${p.startDate}" style="margin-bottom:0">
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:800;color:var(--accent2);margin-bottom:12px">📜 ${lang==='ar'?'المعلومات القانونية':lang==='fr'?'Informations légales':'Legal Info'}</div>
+      <div class="field-label">${t('commercial_reg')}</div>
+      <input class="inp" id="p-commercialReg" value="${p.commercialReg}" placeholder="16/00-1234567" style="margin-bottom:0">
+      <div class="field-label">${t('tax_num')}</div>
+      <input class="inp" id="p-taxNumber" value="${p.taxNumber}" placeholder="000016001234567" style="margin-bottom:0">
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:800;color:var(--success);margin-bottom:12px">📍 ${lang==='ar'?'الموقع الجغرافي':lang==='fr'?'Localisation':'Location'}</div>
+      <div class="${hasLoc?'gps-box gps-box-done':'gps-box gps-box-idle'}" style="margin-bottom:12px">
+        ${hasLoc?`
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:20px">✅</span>
+            <div>
+              <div style="font-size:13px;font-weight:800;color:var(--success)">${t('gps_done')}</div>
+              <div style="font-size:11px;color:var(--muted)">${p.lat.toFixed(5)}°N, ${p.lng.toFixed(5)}°E</div>
+            </div>
+          </div>
+          <a href="https://maps.google.com/?q=${p.lat},${p.lng}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none;display:block;margin-bottom:8px">${t('gps_maps')}</a>`
+        :`<div style="font-size:13px;color:var(--muted);margin-bottom:10px">${t('gps_desc')}</div>`}
+        <button onclick="getProfileGPS()" class="btn ${hasLoc?'btn-ghost':'btn-primary'} btn-full" style="font-size:13px">
+          ${hasLoc?t('gps_update'):t('gps_btn')}
+        </button>
+        <div id="gps-profile-status" style="font-size:12px;color:var(--muted);text-align:center;margin-top:6px;min-height:16px"></div>
+      </div>
+      <div class="field-label">${t('wilaya')}</div>
+      <select class="sel" id="p-wilaya" onchange="onProfileWilayaChange(this.value)">
+        <option value="">${t('select_wilaya')}</option>
+        ${wilayaOptions}
+      </select>
+      ${p.wilaya?`
+      <div class="field-label">${t('commune')}</div>
+      <select class="sel" id="p-commune" onchange="shopProfile.commune=this.value">
+        <option value="">${t('select_commune')}</option>
+        ${communeOptions}
+      </select>`:''}
+      <div class="field-label">${t('address')}</div>
+      <input class="inp" id="p-address" value="${p.address}" placeholder="${lang==='ar'?'الحي، الشارع، رقم المحل':lang==='fr'?'Quartier, rue, numéro':'Street, district, number'}" style="margin-bottom:0">
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:800;color:var(--warn);margin-bottom:12px">📞 ${lang==='ar'?'معلومات التواصل':lang==='fr'?'Contact':'Contact'}</div>
+      <div class="field-label">${t('phone')} 1</div>
+      <input class="inp" id="p-phone" value="${currentUser.phone||''}" placeholder="0555 123 456" style="margin-bottom:0">
+      <div class="field-label">${t('phone')} 2 (${lang==='ar'?'اختياري':lang==='fr'?'Optionnel':'Optional'})</div>
+      <input class="inp" id="p-phone2" value="${p.phone2||''}" placeholder="0661 234 567" style="margin-bottom:0">
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="saveProfile()" style="font-size:15px;margin-bottom:8px">
+      ${t('save_profile')}
+    </button>
+    <div id="profile-msg" style="text-align:center;font-size:13px;min-height:20px;margin-bottom:20px"></div>`
+}
+
+function getProfileGPS() {
+  const s = document.getElementById('gps-profile-status')
+  if(s){ s.innerHTML=`<span class="spinner-inline"></span>${t('gps_loading')}`; s.style.color='var(--accent)' }
+  if(!navigator.geolocation){ if(s){ s.textContent=t('gps_err2'); s.style.color='var(--danger)' } return }
+  navigator.geolocation.getCurrentPosition(
+    pos => { shopProfile.lat=pos.coords.latitude; shopProfile.lng=pos.coords.longitude; renderPage(); showToast('📍 '+t('gps_done')) },
+    err => { const m={1:t('gps_err1'),2:t('gps_err2'),3:t('gps_err3')}; const s=document.getElementById('gps-profile-status'); if(s){ s.textContent=m[err.code]||t('gps_err2'); s.style.color='var(--danger)' } },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+  )
+}
+function onProfileWilayaChange(val) { shopProfile.wilaya=val; shopProfile.commune=''; renderPage(); setTimeout(()=>{const s=document.getElementById('p-wilaya');if(s)s.value=val},50) }
+function handleShopPhoto(input) { const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{shopProfile.photoUrl=e.target.result;renderPage()};r.readAsDataURL(f) }
+async function saveProfile() {
+  shopProfile.shopName=document.getElementById('p-shopName')?.value||''
+  shopProfile.activityType=document.getElementById('p-activityType')?.value||''
+  shopProfile.startDate=document.getElementById('p-startDate')?.value||''
+  shopProfile.commercialReg=document.getElementById('p-commercialReg')?.value||''
+  shopProfile.taxNumber=document.getElementById('p-taxNumber')?.value||''
+  shopProfile.wilaya=document.getElementById('p-wilaya')?.value||shopProfile.wilaya
+  shopProfile.commune=document.getElementById('p-commune')?.value||shopProfile.commune
+  shopProfile.address=document.getElementById('p-address')?.value||''
+  shopProfile.phone2=document.getElementById('p-phone2')?.value||''
+  const phone=document.getElementById('p-phone')?.value||''
+  await db.from('users').update({phone,city:shopProfile.wilaya}).eq('id',currentUser.id)
+  localStorage.setItem('shopProfile_'+currentUser.id, JSON.stringify(shopProfile))
+  const m=document.getElementById('profile-msg')
+  if(m){ m.style.color='var(--success)';m.textContent=t('profile_saved');setTimeout(()=>{if(m)m.textContent=''},3000) }
+  showToast('✅ '+t('profile_saved'))
+}
+
+// ════════════════════════════════════════════════
 //  MY HISTORY
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderMyHistory() {
   const orders = allOrders.filter(o=>o.customerId===currentUser.id)
-  if(orders.length===0) return `<div class="spinner">لم تقدم أي طلب بعد</div>`
-  return `<div class="page-title">📋 طلباتي</div>` + orders.map(o=>`
-    <div class="order-card" style="border-right-color:${STATUS[o.status]?.c||'#888'}">
+  if(orders.length===0) return `<div style="text-align:center;padding:60px;color:var(--muted)">${t('no_orders_yet')}</div>`
+  return `<div class="page-title">${tTab('my_history')}</div>` + orders.map(o=>`
+    <div class="order-card" style="border-inline-start-color:${STATUS_COLORS[o.status]||'#888'}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div><div style="font-weight:800">${o.id}</div><div style="font-size:11px;color:rgba(232,238,255,0.5)">${o.date}</div></div>
-        ${badge(STATUS[o.status]?.l||o.status,STATUS[o.status]?.c||'#888')}
+        <div><div style="font-weight:800">${o.id}</div><div style="font-size:11px;color:var(--muted)">${o.date}</div></div>
+        ${badge(tStatus(o.status), STATUS_COLORS[o.status]||'#888')}
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:16px;font-weight:900;color:var(--accent)">${o.total} دج</span>
-        <button class="btn btn-ghost btn-sm" onclick='printBDC(${JSON.stringify(o).replace(/'/g,"&#39;")})'>🧾 فاتورة</button>
+        <span style="font-size:16px;font-weight:900;color:var(--accent)">${dz(o.total)}</span>
+        <button class="btn btn-ghost btn-sm" onclick='printBDC(${JSON.stringify(o).replace(/'/g,"&#39;")})'>${t('print_bdc')}</button>
       </div>
     </div>`).join('')
 }
 
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 //  POINTS
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
 function renderPoints() {
   const pts = currentUser.points||0
-  const tiers = [{l:'عادي',min:0,e:'🔘',c:'#64748b'},{l:'برونزي',min:200,e:'🥉',c:'#cd7f32'},{l:'فضي',min:500,e:'🥈',c:'#94a3b8'},{l:'ذهبي',min:1000,e:'🥇',c:'#f59e0b'},{l:'بلاتيني',min:2000,e:'💎',c:'#818cf8'}]
-  const badge_tier = [...tiers].reverse().find(b=>pts>=b.min)||tiers[0]
+  const tiers = [
+    {l:t('tier_normal'), min:0, e:'🔘', c:'#64748b'},
+    {l:t('tier_bronze'), min:200, e:'🥉', c:'#cd7f32'},
+    {l:t('tier_silver'), min:500, e:'🥈', c:'#94a3b8'},
+    {l:t('tier_gold'),   min:1000, e:'🥇', c:'#f59e0b'},
+    {l:t('tier_platinum'),min:2000,e:'💎', c:'#818cf8'},
+  ]
+  const tier = [...tiers].reverse().find(b=>pts>=b.min)||tiers[0]
+  const nextTier = tiers.find(b=>b.min>pts)
+  const progress = nextTier ? Math.round((pts-tier.min)/(nextTier.min-tier.min)*100) : 100
+
   return `
-    <div style="background:${badge_tier.c}22;border:1px solid ${badge_tier.c}44;border-radius:20px;padding:28px;text-align:center;margin-bottom:16px">
-      <div style="font-size:56px">${badge_tier.e}</div>
+    <div class="page-title">${tTab('points')}</div>
+    <div style="background:${tier.c}22;border:1px solid ${tier.c}44;border-radius:20px;padding:28px;text-align:center;margin-bottom:16px">
+      <div style="font-size:56px">${tier.e}</div>
       <div style="font-size:32px;font-weight:900;margin-top:8px">${pts.toLocaleString()}</div>
-      <div style="font-size:12px;color:rgba(232,238,255,0.5)">نقطة مكتسبة</div>
-      <div style="font-size:16px;font-weight:800;color:${badge_tier.c};margin-top:6px">درجة: ${badge_tier.l}</div>
+      <div style="font-size:12px;color:var(--muted)">${lang==='ar'?'نقطة مكتسبة':lang==='fr'?'Points gagnés':'Earned Points'}</div>
+      <div style="font-size:16px;font-weight:800;color:${tier.c};margin-top:6px">${tier.l}</div>
+      ${nextTier?`
+      <div style="margin-top:14px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${pts} / ${nextTier.min} ${lang==='ar'?'نقطة للمستوى القادم':lang==='fr'?'pts pour niveau suivant':'pts to next level'}</div>
+        <div class="progress-wrap"><div class="progress-fill" style="width:${progress}%;background:${tier.c}"></div></div>
+      </div>`:''}
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;font-size:13px;color:rgba(232,238,255,0.6);line-height:2.2">
-      ⭐ كل <strong style="color:#e8eeff">100 دج</strong> = <strong style="color:var(--warn)">10 نقاط</strong><br>
-      🎫 500 نقطة = خصم 10%<br>
-      🚚 300 نقطة = توصيل مجاني<br>
-      💧 200 نقطة = منتج مجاني
+    <div class="card">
+      <div style="font-size:13px;font-weight:800;margin-bottom:12px">${lang==='ar'?'نظام النقاط':lang==='fr'?'Système de points':'Points System'}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2.2">
+        ${t('points_desc')}<br>
+        🎫 500 ${lang==='ar'?'نقطة':lang==='fr'?'pts':'pts'} = ${t('reward_discount')} 10%<br>
+        🚚 300 ${lang==='ar'?'نقطة':lang==='fr'?'pts':'pts'} = ${t('reward_delivery')}<br>
+        💧 200 ${lang==='ar'?'نقطة':lang==='fr'?'pts':'pts'} = ${t('reward_product')}
+      </div>
     </div>`
 }
 
-// ═══════════════════════════════════════
-//  PROFILE — ملف المحل
-// ═══════════════════════════════════════
-let shopProfile = {shopName:"",commercialReg:"",taxNumber:"",activityType:"",startDate:"",wilaya:"",address:"",lat:null,lng:null,photoUrl:null,phone2:""}
+// ════════════════════════════════════════════════
+//  PLACE ORDER
+// ════════════════════════════════════════════════
+async function placeOrder() {
+  const phone = document.getElementById('order-phone')?.value
+  const addrInput = document.getElementById('order-address')?.value
+  const note = document.getElementById('order-note')?.value||''
+  orderLocation.address = addrInput||''
+  const commune = document.getElementById('order-commune')?.value||orderLocation.commune||''
+  const wilaya = orderLocation.wilaya||''
+  const fullAddress = [addrInput, commune, wilaya].filter(Boolean).join(' — ')
 
-function renderProfile() {
-  const p = shopProfile
-  const hasLocation = p.lat && p.lng
-  const wilayas = ["الجزائر","وهران","قسنطينة","عنابة","بجاية","سطيف","تلمسان","باتنة","بسكرة","ورقلة","غرداية","تيزي وزو","المدية","البليدة","بومرداس","تيبازة","جيجل","سكيكدة","سوق أهراس","خنشلة","أم البواقي","قالمة","الطارف","تبسة","مسيلة","برج بوعريريج","بويرة","الأغواط","الجلفة","النعامة","البيض","تيسمسيلت","سيدي بلعباس","معسكر","مستغانم","تيارت","الشلف","عين الدفلى","عين تموشنت","غليزان","أدرار","تمنراست","إليزي","تندوف","بشار"]
-  return `<div class="page-title">🏪 ملف المحل</div>
-<div style="text-align:center;margin-bottom:20px"><div id="shop-photo-preview" style="width:120px;height:120px;border-radius:20px;background:rgba(255,255,255,0.06);border:2px dashed rgba(56,189,248,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 12px;overflow:hidden;cursor:pointer" onclick="document.getElementById('shop-photo-input').click()">${p.photoUrl?`<img src="${p.photoUrl}" style="width:100%;height:100%;object-fit:cover">`:"<div style='font-size:36px'>🏪</div><div style='font-size:11px;color:rgba(232,238,255,0.4);margin-top:4px'>اضغط لإضافة صورة</div>"}</div><input type="file" id="shop-photo-input" accept="image/*" style="display:none" onchange="handleShopPhoto(this)"><button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="document.getElementById('shop-photo-input').click()">📷 ${p.photoUrl?"تغيير الصورة":"إضافة صورة المحل"}</button></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--accent)">📋 المعلومات الأساسية</div><div class="field-label">🏪 اسم المحل</div><input class="inp" id="p-shopName" value="${p.shopName}" placeholder="محل الوفاء للمشروبات"><div class="field-label">🗂️ نوع النشاط</div><select class="sel" id="p-activityType"><option value="">اختر نوع النشاط</option>${["تجزئة","جملة","مطعم","فندق","سوبرماركت","أخرى"].map(t=>`<option value="${t}" ${p.activityType===t?"selected":""}>${t}</option>`).join("")}</select><div class="field-label">📅 تاريخ بداية النشاط</div><input class="inp" id="p-startDate" type="date" value="${p.startDate}"></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--accent2)">📜 المعلومات القانونية</div><div class="field-label">🔢 رقم السجل التجاري</div><input class="inp" id="p-commercialReg" value="${p.commercialReg}" placeholder="16/00-1234567"><div class="field-label">🧾 الرقم الضريبي NIF</div><input class="inp" id="p-taxNumber" value="${p.taxNumber}" placeholder="000016001234567"></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--success)">📍 الموقع الجغرافي</div><div class="field-label">🏙️ الولاية</div><select class="sel" id="p-wilaya"><option value="">اختر الولاية</option>${wilayas.map(w=>`<option value="${w}" ${p.wilaya===w?"selected":""}>${w}</option>`).join("")}</select><div class="field-label">🏠 العنوان التفصيلي</div><input class="inp" id="p-address" value="${p.address}" placeholder="الحي، الشارع، رقم المحل"><div style="background:${hasLocation?"rgba(34,197,94,0.08)":"rgba(56,189,248,0.06)"};border:1px solid ${hasLocation?"rgba(34,197,94,0.25)":"rgba(56,189,248,0.2)"};border-radius:12px;padding:14px;margin-bottom:10px">${hasLocation?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:20px">✅</span><div><div style="font-size:13px;font-weight:700;color:var(--success)">تم تحديد الموقع</div><div style="font-size:11px;color:rgba(232,238,255,0.5)">${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</div></div></div><a href="https://maps.google.com/?q=${p.lat},${p.lng}" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">🗺️ عرض على Google Maps</a>`:"<div style="font-size:13px;color:rgba(232,238,255,0.6);margin-bottom:10px">📡 يسمح بتوصيل أسرع ودقيق لمحلك</div>"}<button class="btn ${hasLocation?"btn-ghost":"btn-primary"}" style="width:100%;padding:12px;font-size:14px;margin-top:8px" onclick="getGPSLocation()">📍 ${hasLocation?"🔄 تحديث الموقع":"تحديد موقعي الآن بـ GPS"}</button></div><div id="gps-status" style="font-size:12px;color:rgba(232,238,255,0.5);text-align:center;min-height:18px"></div></div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:20px"><div style="font-size:14px;font-weight:800;margin-bottom:14px;color:var(--warn)">📞 معلومات التواصل</div><div class="field-label">📱 رقم الهاتف الرئيسي</div><input class="inp" id="p-phone" value="${currentUser.phone||""}" placeholder="0555 123 456"><div class="field-label">📱 رقم هاتف بديل</div><input class="inp" id="p-phone2" value="${p.phone2||""}" placeholder="0661 234 567"></div>
-<button class="btn-primary" style="width:100%;padding:15px;font-size:16px;border-radius:14px" onclick="saveProfile()">💾 حفظ ملف المحل</button><div id="profile-msg" style="text-align:center;margin-top:12px;font-size:13px;min-height:20px"></div>`
+  if(!phone){ showToast('⚠️ '+t('phone')); return }
+  if(!wilaya){ showToast('⚠️ '+t('wilaya')); return }
+  if(!addrInput){ showToast('⚠️ '+t('address')); return }
+
+  const cartItems = Object.entries(cart).map(([id,qty])=>({...allProducts.find(p=>p.id===id),qty}))
+  const subtotal = cartItems.reduce((s,i)=>s+(i.sell_price||0)*i.qty,0)
+  const total = subtotal+50
+  const orderId = 'CMD-'+Date.now().toString().slice(-5)
+  const gpsNote = orderLocation.lat ? `GPS:${orderLocation.lat.toFixed(6)},${orderLocation.lng.toFixed(6)}` : ''
+  const fullNote = [note, gpsNote].filter(Boolean).join(' | ')
+
+  const {error} = await db.from('orders').insert({
+    id:orderId, customer_id:currentUser.id, customer_name:currentUser.name,
+    phone, address:fullAddress, city:wilaya, subtotal, delivery_fee:50, total,
+    status:'pending', note:fullNote, order_date:new Date().toISOString().split('T')[0]
+  })
+  if(error){ showToast('❌ '+error.message); return }
+
+  await db.from('order_items').insert(cartItems.map(i=>({
+    order_id:orderId, product_id:i.id, name:i.name+' '+i.volume,
+    emoji:i.emoji, quantity:i.qty, unit_price:i.sell_price
+  })))
+
+  const earned = Math.floor(total/100)*10
+  if(earned>0) await db.from('users').update({points:(currentUser.points||0)+earned}).eq('id',currentUser.id)
+  currentUser.points = (currentUser.points||0)+earned
+  cart = {}
+  orderLocation = {lat:null,lng:null,wilaya:'',commune:'',address:''}
+  await loadData()
+  showToast(`🎉 ${t('order_confirmed')} — ${orderId}`, 5000)
+  switchTab('my_history')
 }
 
-function handleShopPhoto(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{shopProfile.photoUrl=e.target.result;renderPage()};reader.readAsDataURL(file)}
-
-function getGPSLocation(){const s=document.getElementById("gps-status");if(s){s.textContent="⏳ جاري تحديد موقعك...";s.style.color="var(--accent)"}if(!navigator.geolocation){if(s){s.textContent="⚠️ المتصفح لا يدعم GPS";s.style.color="var(--danger)"}return}navigator.geolocation.getCurrentPosition(pos=>{shopProfile.lat=pos.coords.latitude;shopProfile.lng=pos.coords.longitude;renderPage()},err=>{const m={1:"⚠️ يرجى السماح بالوصول للموقع",2:"⚠️ تعذر تحديد الموقع",3:"⚠️ انتهت مهلة التحديد"};const s=document.getElementById("gps-status");if(s){s.textContent=m[err.code]||"⚠️ خطأ";s.style.color="var(--danger)"}},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
-
-async function saveProfile(){const m=document.getElementById("profile-msg");shopProfile.shopName=document.getElementById("p-shopName")?.value||"";shopProfile.activityType=document.getElementById("p-activityType")?.value||"";shopProfile.startDate=document.getElementById("p-startDate")?.value||"";shopProfile.commercialReg=document.getElementById("p-commercialReg")?.value||"";shopProfile.taxNumber=document.getElementById("p-taxNumber")?.value||"";shopProfile.wilaya=document.getElementById("p-wilaya")?.value||"";shopProfile.address=document.getElementById("p-address")?.value||"";shopProfile.phone2=document.getElementById("p-phone2")?.value||"";const phone=document.getElementById("p-phone")?.value||"";await db.from("users").update({phone,city:shopProfile.wilaya}).eq("id",currentUser.id);localStorage.setItem("shopProfile_"+currentUser.id,JSON.stringify(shopProfile));if(m){m.style.color="var(--success)";m.textContent="✅ تم حفظ ملف المحل بنجاح!";setTimeout(()=>{if(m)m.textContent=""},3000)}}
-
-function loadShopProfile(){const s=localStorage.getItem("shopProfile_"+(currentUser?.id));if(s){try{shopProfile={...shopProfile,...JSON.parse(s)}}catch(e){}}}
-
-
-// ═══════════════════════════════════════
-//  MODAL
-// ═══════════════════════════════════════
-function openModal(title, html) {
-  document.getElementById('modal-title').textContent = title
-  document.getElementById('modal-body').innerHTML = html
-  document.getElementById('modal').classList.remove('hidden')
-}
-function closeModal() { document.getElementById('modal').classList.add('hidden') }
-
-// ═══════════════════════════════════════
-//  ACTIONS
-// ═══════════════════════════════════════
+// ════════════════════════════════════════════════
+//  CRUD ACTIONS
+// ════════════════════════════════════════════════
+// ── USERS ──
 function addUser() {
-  openModal('➕ مستخدم جديد', `
-    <div class="field-label">الاسم الكامل</div><input class="inp" id="f-name" placeholder="أحمد بن علي">
-    <div class="field-label">اسم المستخدم</div><input class="inp" id="f-username" placeholder="ahmed123">
-    <div class="field-label">كلمة المرور</div><input class="inp" id="f-pass" type="password" placeholder="••••••••">
-    <div class="field-label">الدور</div>
+  openModal(t('add_user'), `
+    <div class="field-label">${lang==='ar'?'الاسم الكامل':lang==='fr'?'Nom complet':'Full Name'}</div>
+    <input class="inp" id="f-name" style="margin-bottom:0">
+    <div class="field-label">${t('username')}</div>
+    <input class="inp" id="f-username" style="margin-bottom:0">
+    <div class="field-label">${t('password')}</div>
+    <input class="inp" id="f-pass" type="password" style="margin-bottom:0">
+    <div class="field-label">${lang==='ar'?'الدور':lang==='fr'?'Rôle':'Role'}</div>
     <select class="sel" id="f-role">
-      <option value="customer">👤 زبون</option>
-      <option value="orders_admin">📋 مسؤول الطلبات</option>
-      <option value="stock_admin">🏭 مسؤول المخزن</option>
-      <option value="driver">🚗 سائق</option>
+      ${Object.entries(t('roles')).filter(([k])=>k!=='superadmin').map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
     </select>
-    <div class="field-label">الهاتف</div><input class="inp" id="f-phone" placeholder="0555123456">
-    <div class="field-label">المدينة / المنطقة</div><input class="inp" id="f-city" placeholder="الجزائر">
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveNewUser()">💾 حفظ</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
+    <div class="field-label">${t('phone')}</div>
+    <input class="inp" id="f-phone" style="margin-bottom:0">
+    <div class="field-label">${lang==='ar'?'المدينة / المنطقة':lang==='fr'?'Ville / Zone':'City / Zone'}</div>
+    <input class="inp" id="f-city" style="margin-bottom:16px">
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveNewUser()">${t('save')}</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">${t('cancel')}</button>
     </div>`)
 }
 
@@ -830,23 +1547,26 @@ async function saveNewUser() {
   const role=document.getElementById('f-role').value
   const phone=document.getElementById('f-phone').value
   const city=document.getElementById('f-city').value
-  if(!name||!username||!pass){alert('يرجى ملء الحقول الإلزامية');return}
+  if(!name||!username||!pass){ showToast('⚠️ '+t('fillFields')); return }
   const {error}=await db.from('users').insert({name,username,password_hash:pass,role,phone,city,zone:city,points:0,active:true})
-  if(error){alert('خطأ: '+error.message);return}
-  closeModal(); await loadData(); renderPage()
+  if(error){ showToast('❌ '+error.message); return }
+  closeModal(); await loadData(); renderPage(); showToast('✅ '+name)
 }
 
 function editUser(id) {
-  const u=allUsers.find(x=>x.id===id)
-  if(!u)return
-  openModal('✏️ تعديل المستخدم', `
-    <div class="field-label">الاسم الكامل</div><input class="inp" id="f-name" value="${u.name||''}">
-    <div class="field-label">كلمة المرور الجديدة (اتركها فارغة للإبقاء)</div><input class="inp" id="f-pass" type="password" placeholder="••••••••">
-    <div class="field-label">الهاتف</div><input class="inp" id="f-phone" value="${u.phone||''}">
-    <div class="field-label">المدينة / المنطقة</div><input class="inp" id="f-city" value="${u.city||u.zone||''}">
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveEditUser('${id}')">💾 حفظ</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
+  const u=allUsers.find(x=>x.id===id); if(!u)return
+  openModal(t('edit')+' — '+u.name, `
+    <div class="field-label">${lang==='ar'?'الاسم الكامل':lang==='fr'?'Nom complet':'Full Name'}</div>
+    <input class="inp" id="f-name" value="${u.name}" style="margin-bottom:0">
+    <div class="field-label">${t('password')} (${lang==='ar'?'اتركه فارغاً للإبقاء':lang==='fr'?'Laisser vide pour garder':'Leave empty to keep'})</div>
+    <input class="inp" id="f-pass" type="password" style="margin-bottom:0">
+    <div class="field-label">${t('phone')}</div>
+    <input class="inp" id="f-phone" value="${u.phone||''}" style="margin-bottom:0">
+    <div class="field-label">${lang==='ar'?'المدينة / المنطقة':lang==='fr'?'Ville / Zone':'City / Zone'}</div>
+    <input class="inp" id="f-city" value="${u.city||u.zone||''}" style="margin-bottom:16px">
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveEditUser('${id}')">${t('save')}</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">${t('cancel')}</button>
     </div>`)
 }
 
@@ -855,7 +1575,7 @@ async function saveEditUser(id) {
   const pass=document.getElementById('f-pass').value
   if(pass) update.password_hash=pass
   await db.from('users').update(update).eq('id',id)
-  closeModal(); await loadData(); renderPage()
+  closeModal(); await loadData(); renderPage(); showToast('✅ '+t('save'))
 }
 
 async function toggleUser(id,active) {
@@ -863,251 +1583,22 @@ async function toggleUser(id,active) {
   await loadData(); renderPage()
 }
 
+// ── PRODUCTS ──
 function addProduct() {
-  openModal('➕ منتج جديد', `
-    <div class="grid2">
-      <div><div class="field-label">اسم المنتج</div><input class="inp" id="f-name" placeholder="كوكاكولا"></div>
-      <div><div class="field-label">الأيقونة</div><input class="inp" id="f-emoji" placeholder="🥤" value="🥤"></div>
-      <div><div class="field-label">سعر البيع (دج)</div><input class="inp" id="f-sell" type="number" placeholder="85"></div>
-      <div><div class="field-label">سعر التكلفة (دج)</div><input class="inp" id="f-cost" type="number" placeholder="55"></div>
-      <div><div class="field-label">الكمية الأولية</div><input class="inp" id="f-stock" type="number" placeholder="100"></div>
-      <div><div class="field-label">الحد الأدنى للتنبيه</div><input class="inp" id="f-min" type="number" placeholder="30"></div>
-      <div><div class="field-label">الحجم</div><input class="inp" id="f-vol" placeholder="1.5L"></div>
-      <div><div class="field-label">تاريخ الانتهاء</div><input class="inp" id="f-exp" type="date"></div>
+  openModal(t('add_product'), `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="grid-column:1/-1"><div class="field-label">${lang==='ar'?'اسم المنتج':lang==='fr'?'Nom produit':'Product Name'}</div><input class="inp" id="f-name" style="margin-bottom:0"></div>
+      <div><div class="field-label">${t('sell_price')}</div><input class="inp" id="f-sell" type="number" style="margin-bottom:0"></div>
+      <div><div class="field-label">${t('cost_price')}</div><input class="inp" id="f-cost" type="number" style="margin-bottom:0"></div>
+      <div><div class="field-label">${t('stock_qty')}</div><input class="inp" id="f-stock" type="number" style="margin-bottom:0"></div>
+      <div><div class="field-label">${t('min_stock')}</div><input class="inp" id="f-min" type="number" value="30" style="margin-bottom:0"></div>
+      <div><div class="field-label">${t('volume')}</div><input class="inp" id="f-vol" placeholder="1.5L" style="margin-bottom:0"></div>
+      <div><div class="field-label">${lang==='ar'?'الأيقونة':'Emoji'}</div><input class="inp" id="f-emoji" value="🥤" style="margin-bottom:0"></div>
     </div>
-    <div class="field-label">الفئة</div>
-    <select class="sel" id="f-cat"><option>غازية</option><option>غير غازية</option><option>ماء</option></select>
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveNewProduct()">💾 حفظ</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
-    </div>`)
-}
-
-async function saveNewProduct() {
-  const p={name:document.getElementById('f-name').value,emoji:document.getElementById('f-emoji').value,sell_price:+document.getElementById('f-sell').value,cost_price:+document.getElementById('f-cost').value,stock:+document.getElementById('f-stock').value,min_stock:+document.getElementById('f-min').value,volume:document.getElementById('f-vol').value,expiry_date:document.getElementById('f-exp').value,category:document.getElementById('f-cat').value,active:true}
-  if(!p.name||!p.sell_price){alert('يرجى ملء الحقول الإلزامية');return}
-  const {error}=await db.from('products').insert(p)
-  if(error){alert('خطأ: '+error.message);return}
-  closeModal(); await loadData(); renderPage()
-}
-
-function editProduct(id) {
-  const p=allProducts.find(x=>x.id===id); if(!p)return
-  openModal('✏️ تعديل المنتج', `
-    <div class="grid2">
-      <div><div class="field-label">اسم المنتج</div><input class="inp" id="f-name" value="${p.name}"></div>
-      <div><div class="field-label">الأيقونة</div><input class="inp" id="f-emoji" value="${p.emoji||'🥤'}"></div>
-      <div><div class="field-label">سعر البيع (دج)</div><input class="inp" id="f-sell" type="number" value="${p.sell_price}"></div>
-      <div><div class="field-label">سعر التكلفة (دج)</div><input class="inp" id="f-cost" type="number" value="${p.cost_price}"></div>
-      <div><div class="field-label">الكمية في المخزن</div><input class="inp" id="f-stock" type="number" value="${p.stock}"></div>
-      <div><div class="field-label">الحد الأدنى</div><input class="inp" id="f-min" type="number" value="${p.min_stock}"></div>
-      <div><div class="field-label">الحجم</div><input class="inp" id="f-vol" value="${p.volume}"></div>
-      <div><div class="field-label">تاريخ الانتهاء</div><input class="inp" id="f-exp" type="date" value="${p.expiry_date}"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveEditProduct('${id}')">💾 حفظ</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
-    </div>`)
-}
-
-async function saveEditProduct(id) {
-  const update={name:document.getElementById('f-name').value,emoji:document.getElementById('f-emoji').value,sell_price:+document.getElementById('f-sell').value,cost_price:+document.getElementById('f-cost').value,stock:+document.getElementById('f-stock').value,min_stock:+document.getElementById('f-min').value,volume:document.getElementById('f-vol').value,expiry_date:document.getElementById('f-exp').value}
-  await db.from('products').update(update).eq('id',id)
-  closeModal(); await loadData(); renderPage()
-}
-
-async function deleteProduct(id) {
-  if(!confirm('هل أنت متأكد من حذف هذا المنتج؟'))return
-  await db.from('products').update({active:false}).eq('id',id)
-  await loadData(); renderPage()
-}
-
-function addStock(id,name) {
-  openModal(`📦 إضافة كمية — ${name}`,`
-    <div class="field-label">الكمية المضافة</div>
-    <input class="inp" id="f-qty" type="number" placeholder="100" min="1">
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveStock('${id}','add')">✅ تأكيد الإضافة</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
-    </div>`)
-}
-
-function setStock(id,name,current) {
-  openModal(`✏️ تعديل كمية — ${name}`,`
-    <div style="text-align:center;margin-bottom:14px">
-      <div style="font-size:13px;color:rgba(232,238,255,0.5)">الكمية الحالية</div>
-      <div style="font-size:36px;font-weight:900;color:var(--accent)">${current}</div>
-    </div>
-    <div class="field-label">الكمية الجديدة</div>
-    <input class="inp" id="f-qty" type="number" value="${current}" min="0">
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveStock('${id}','set')">💾 حفظ الكمية</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
-    </div>`)
-}
-
-async function saveStock(id, mode) {
-  const qty=+document.getElementById('f-qty').value
-  if(qty<0){alert('أدخل كمية صحيحة');return}
-  const p=allProducts.find(x=>x.id===id)
-  const newStock = mode==='add' ? p.stock+qty : qty
-  await db.from('products').update({stock:newStock}).eq('id',id)
-  closeModal(); await loadData(); renderPage()
-}
-
-function addExpense() {
-  openModal('➕ تكلفة جديدة',`
-    <div class="field-label">وصف التكلفة</div><input class="inp" id="f-label" placeholder="إيجار المستودع">
-    <div class="field-label">المبلغ (دج)</div><input class="inp" id="f-amount" type="number" placeholder="15000">
-    <div class="field-label">النوع</div>
-    <select class="sel" id="f-type"><option value="fixed">ثابتة</option><option value="variable">متغيرة</option></select>
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveNewExpense()">💾 حفظ</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
-    </div>`)
-}
-
-async function saveNewExpense() {
-  const label=document.getElementById('f-label').value
-  const amount=+document.getElementById('f-amount').value
-  const type=document.getElementById('f-type').value
-  if(!label||!amount){alert('يرجى ملء الحقول');return}
-  await db.from('expenses').insert({label,amount,type,expense_date:new Date().toISOString().split('T')[0]})
-  closeModal(); await loadData(); renderPage()
-}
-
-function editExpense(id) {
-  const e=allExpenses.find(x=>x.id===id); if(!e)return
-  openModal('✏️ تعديل التكلفة',`
-    <div class="field-label">وصف التكلفة</div><input class="inp" id="f-label" value="${e.label}">
-    <div class="field-label">المبلغ (دج)</div><input class="inp" id="f-amount" type="number" value="${e.amount}">
-    <div class="field-label">النوع</div>
-    <select class="sel" id="f-type"><option value="fixed" ${e.type==='fixed'?'selected':''}>ثابتة</option><option value="variable" ${e.type==='variable'?'selected':''}>متغيرة</option></select>
-    <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="saveEditExpense('${id}')">💾 حفظ</button>
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">إلغاء</button>
-    </div>`)
-}
-
-async function saveEditExpense(id) {
-  const label=document.getElementById('f-label').value
-  const amount=+document.getElementById('f-amount').value
-  const type=document.getElementById('f-type').value
-  await db.from('expenses').update({label,amount,type}).eq('id',id)
-  closeModal(); await loadData(); renderPage()
-}
-
-async function deleteExpense(id) {
-  if(!confirm('هل أنت متأكد من حذف هذه التكلفة؟'))return
-  await db.from('expenses').delete().eq('id',id)
-  await loadData(); renderPage()
-}
-
-async function markReady(id) {
-  await db.from('orders').update({status:'ready',printed:true}).eq('id',id)
-  await loadData(); renderPage()
-}
-
-async function assignDriver(orderId, driverId) {
-  if(!driverId)return
-  const driver=allUsers.find(u=>u.id===driverId)
-  await db.from('orders').update({status:'in_transit',driver_id:driverId,driver_name:driver?.name||''}).eq('id',orderId)
-  await loadData(); renderPage()
-}
-
-async function deliverOrder(id) {
-  if(!confirm('تأكيد تسليم هذا الطلب؟'))return
-  await db.from('orders').update({status:'delivered'}).eq('id',id)
-  await loadData(); renderPage()
-}
-
-async function placeOrder() {
-  const phone=document.getElementById('order-phone')?.value
-  const addrInput=document.getElementById('order-address')?.value
-  const note=document.getElementById('order-note')?.value||''
-
-  // بناء العنوان الكامل
-  orderLocation.address = addrInput||''
-  const commune = document.getElementById('order-commune')?.value||orderLocation.commune||''
-  const wilaya = orderLocation.wilaya||''
-  const fullAddress = [addrInput, commune, wilaya].filter(Boolean).join(' — ')
-  const city = wilaya || currentUser.city || ''
-
-  if(!phone){alert('يرجى إدخال رقم الهاتف');return}
-  if(!wilaya){alert('يرجى اختيار الولاية');return}
-  if(!addrInput){alert('يرجى إدخال العنوان التفصيلي');return}
-
-  const cartItems=Object.entries(cart).map(([id,qty])=>({...allProducts.find(p=>p.id===id),qty}))
-  const subtotal=cartItems.reduce((s,i)=>s+(i.sell_price||0)*i.qty,0)
-  const total=subtotal+50
-  const orderId='CMD-'+Date.now().toString().slice(-5)
-
-  // إضافة بيانات GPS في الملاحظة إذا كانت متوفرة
-  const gpsNote = orderLocation.lat ? `📍GPS: ${orderLocation.lat.toFixed(5)},${orderLocation.lng.toFixed(5)}` : ''
-  const fullNote = [note, gpsNote].filter(Boolean).join(' | ')
-
-  const {error:oe}=await db.from('orders').insert({
-    id:orderId, customer_id:currentUser.id, customer_name:currentUser.name,
-    phone, address:fullAddress, city, subtotal, delivery_fee:50, total,
-    status:'pending', note:fullNote, order_date:new Date().toISOString().split('T')[0]
-  })
-  if(oe){alert('خطأ في الطلب: '+oe.message);return}
-
-  const items=cartItems.map(i=>({order_id:orderId,product_id:i.id,name:i.name+' '+i.volume,emoji:i.emoji,quantity:i.qty,unit_price:i.sell_price}))
-  await db.from('order_items').insert(items)
-
-  const earned=Math.floor(total/100)*10
-  if(earned>0) await db.from('users').update({points:(currentUser.points||0)+earned}).eq('id',currentUser.id)
-  currentUser.points=(currentUser.points||0)+earned
-
-  cart={}
-  orderLocation={lat:null,lng:null,wilaya:'',commune:'',address:''}
-  await loadData()
-  alert(`🎉 تم تأكيد طلبك!\nرقم الطلب: ${orderId}\n📍 ${fullAddress}\n⭐ نقاط مكتسبة: +${earned}`)
-  switchTab('my_history')
-}
-</script>
-</body>
-</html>
-<script>
-// ═══ DRIVER STATS ═══
-function renderDriverStats() {
-  const myDelivered = allOrders.filter(o=>o.driverId===currentUser.id&&o.status==='delivered')
-  const myInTransit = allOrders.filter(o=>o.driverId===currentUser.id&&o.status==='in_transit')
-  const totalEarnings = myDelivered.reduce((s,o)=>s+o.delivery,0)
-  const totalOrders = myDelivered.length
-  return `
-    <div class="page-title">📊 إحصائياتي</div>
-    <div style="background:linear-gradient(135deg,rgba(56,189,248,0.12),rgba(129,140,248,0.08));border:1px solid rgba(56,189,248,0.2);border-radius:20px;padding:24px;text-align:center;margin-bottom:16px">
-      <div style="font-size:52px;margin-bottom:8px">🚗</div>
-      <div style="font-size:22px;font-weight:900">${currentUser.name}</div>
-      <div style="font-size:13px;color:rgba(232,238,255,0.5);margin-top:4px">سائق MADJI PRO</div>
-      <div style="display:flex;justify-content:center;gap:4px;margin-top:10px">
-        ${'⭐⭐⭐⭐⭐'.split('').map((_,i)=>`<span style="font-size:18px">${i<4?'⭐':'☆'}</span>`).join('')}
-        <span style="font-size:14px;font-weight:700;color:var(--warn);margin-right:4px">4.8</span>
-      </div>
-    </div>
-    <div class="kpi-grid">
-      ${kpi(totalOrders,'طلبات مُسلَّمة','#22c55e')}
-      ${kpi(myInTransit.length,'قيد التوصيل','#818cf8')}
-      ${kpi(totalEarnings.toLocaleString()+' دج','أرباح التوصيل','#f59e0b')}
-      ${kpi(allOrders.filter(o=>o.driverId===currentUser.id).length,'إجمالي الطلبات','#38bdf8')}
-    </div>
-    ${myDelivered.length>0?`
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 آخر التوصيلات</div>
-      ${myDelivered.slice(0,5).map(o=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <div>
-            <div style="font-size:13px;font-weight:700">${o.customerName}</div>
-            <div style="font-size:11px;color:rgba(232,238,255,0.4)">${o.date}</div>
-          </div>
-          <div style="text-align:left">
-            <div style="font-size:14px;font-weight:900;color:var(--success)">${o.total} دج</div>
-            <div style="font-size:10px;color:rgba(232,238,255,0.4)">${o.id}</div>
-          </div>
-        </div>`).join('')}
-    </div>`:''}
-  `
-}
-</script>
+    <div class="field-label">${t('expiry')}</div>
+    <input class="inp" id="f-exp" type="date" style="margin-bottom:0">
+    <div class="field-label">${t('category')}</div>
+    <select class="sel" id="f-cat"><option value="غازية">${t('cats').gazeous}</option><option value="غير غازية">${t('cats').nongaz}</option><option value="ماء">${t('cats').water}</option></select>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveNewProduct()">${t('save')}</button>
+      <button class="btn btn-ghos
